@@ -82,6 +82,72 @@
 ##			-Re-reenabled the Form Kingdom/Empire decisons because disabling
 ##				them was too ugly
 ##
+##	Modified: 8/24/2015		v0.5.0		Richard Maw
+##		=Big Update
+##			-Fancy new mechanism for determining the recipient title.
+##
+##				Rather than setting a title flag, which implies
+##				only one concurrent user of the feature, this
+##				takes an approach inspired by relational
+##				databases.
+##
+##				The first time a title is designated as a
+##				recipient, a unique numeric ID is determined by
+##				scanning all the current titles, finding the
+##				one with the largest ID, and then saving a
+##				value one larger as the ID for the new
+##				recipient title's scope.
+##
+##				This forms an auto-incrementing table of titles.
+##
+##				The value in the title is then copied into the
+##				character's scope, allowing each character to
+##				have a different notion of their designated
+##				title.
+##
+##				This is a one to many relationship between
+##				characters and titles, where many characters
+##				can hold a reference to the same title, such as
+##				if both the title owner and their liege wanted
+##				to assign a title to it.
+##
+##				The decision to assign a title to the recipient
+##				then works by searching through all the titles
+##				and checking if they have the same ID as the
+##				character instigating the title assignment.
+##
+##				This would be a lot easier if there were a
+##				mechanism to store a reference to a scope in
+##				another scope (like a generic event target
+##				mechanism),
+##				and it would be possible to bring back per-rank
+##				designated titles if set_variable and
+##				is_variable_equal allowed both a separate scope
+##				to compare, and the name of the variable in
+##				that scope.
+##
+##			-Allowed the assignment of titles when a vassal.
+##
+##				Creation of custom titles when a vassal is not
+##				yet allowed.
+##
+##			-Allow the assignment to titles that are not yet created.
+##
+##				You must completely control all the de-jure
+##				territory of the title if you don't directly or
+##				indirectly control the title itself.
+##
+##				Inactive titles, such as the Kingdom of Leon in
+##				early start dates, may not be assigned to or
+##				have other titles assigned to them, even if you
+##				completely control the de-jure territory, or
+##				the titular capital when it has no de-jure
+##				territory.
+##
+##				You must still create titles that you want to
+##				designate as the recipient title.
+##
+##
 ##	Readme:
 ##			Decisions to replace and augment the "Form New 
 ##		Kingdom/Empire" decisions from CM Dlc to use targeted 
@@ -177,9 +243,10 @@
 title_decisions = {
 
 ##--################################################################
-##	Designate Duchy As County Recipient
+##	Designate Title As Title Recipient
 ##--################################################################
-	da_designate_recipient_duchy = {
+
+	da_designate_recipient_title = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
 		ai_target_filter = primary_title
@@ -193,55 +260,62 @@ title_decisions = {
 		
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			holder_scope = {
-				OR = { 
+				OR = {
 					character = FROM
 					top_liege = {
 						character = FROM
 					}
 				}
 			}
-			real_tier = DUKE
 		}
 		
 		#Allow Block
 		allow = {
-			custom_tooltip = {
-				text = da_ttip_is_current_designate
-				hidden_tooltip = {
-					NOT = {
-						has_title_flag = adjudication_duchy_recipient
+			#custom_tooltip = {
+				#text = da_ttip_is_current_designate
+				#hidden_tooltip = {
+					# Either no recipient ID set, or it is
+					# set on title and FROM either doesn't
+					# have a flag, or does and has different ID.
+					OR = {
+						NOT = { da_has_title_id = yes }
+						AND = {
+							da_has_title_id = yes
+							NOT = { is_variable_equal = { which = da_title_id which = FROM } }
+						}
 					}
-				}
-			}
+				#}
+			#}
 			FROM = {
-				custom_tooltip = {
-					text = da_ttip_adult_free_capable_independent
-					hidden_tooltip = {
+				#custom_tooltip = {
+					#text = da_ttip_adult_free_capable_independent
+					#hidden_tooltip = {
 						is_adult = yes
 						prisoner = no
 						NOT = { trait = incapable }
-						independent = yes
-					}
-				}
+						#independent = yes # TODO: Remove independent check
+					#}
+				#}
 			}
 		}
 		
 		#Effect Block
 		effect = {
-			custom_tooltip = {
-				text = da_ttip_this_is_designated_duchy
-				hidden_tooltip = {
-					FROM = {
-						any_title_under = {
-							limit = {
-								real_tier = DUKE
-								has_title_flag = adjudication_duchy_recipient
-							}
-							clr_title_flag = adjudication_duchy_recipient
+			ROOT = {
+				custom_tooltip = {
+					text = da_ttip_this_is_designated_title
+					#hidden_tooltip = {
+						if = {
+							limit = { NOT = { da_has_title_id = yes } }
+							da_assign_title_id = yes
 						}
-					}
-					set_title_flag = adjudication_duchy_recipient
+						FROM = {
+							set_variable = { which = da_title_id which = ROOT }
+							set_character_flag = da_has_title_recipient_id
+						}
+					#}
 				}
 			}
 		}
@@ -254,7 +328,7 @@ title_decisions = {
 			factor = 0
 		}
 	}
-## 	/Designate Duchy As County Recipient
+## 	/Designate Title As Recipient
 
 ##--################################################################
 ##	Transfer County to Recipient Duchy 
@@ -274,13 +348,12 @@ title_decisions = {
 		
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			real_tier = COUNT
 			holder_scope = {
 				OR = { 
 					character = FROM
-					top_liege = {
-						character = FROM
-					}
+					de_facto_liege = FROM
 				}
 			}
 		}
@@ -288,92 +361,65 @@ title_decisions = {
 		#Allow Block
 		allow = {
 			FROM = {
-				custom_tooltip = {
-					text = da_ttip_one_is_designated
-					hidden_tooltip = {
+				#custom_tooltip = {
+					#text = da_ttip_one_is_designated
+					#hidden_tooltip = {
+						has_character_flag = da_has_title_recipient_id
 						any_realm_title = {
-							has_title_flag = adjudication_duchy_recipient 
-							NOT = {
-								ROOT = {
-									de_jure_liege = PREV
+							AND = {
+								da_has_title_id = yes
+								real_tier = DUKE
+								is_variable_equal = { which = da_title_id which = FROM }
+								NOT = {
+									ROOT = {
+										de_jure_liege = PREV
+									}
 								}
 							}
 						}
-					}
-				}
-				custom_tooltip = {
-					text = da_ttip_more_than_one_designate
-					hidden_tooltip = {
-						NOT = {
-							any_realm_title = {
-								count = 2
-								has_title_flag = adjudication_duchy_recipient 
-							}
-						}
-					}
-				}
-				custom_tooltip = {
-					text = da_ttip_adult_free_capable_independent
-					hidden_tooltip = {
-						is_adult = yes
-						prisoner = no
-						NOT = { trait = incapable }
-						independent = yes
-					}
-				}
+					#}
+				#}
+				is_adult = yes
+				prisoner = no
+				NOT = { trait = incapable }
 				prestige = 100
 				piety = 100
 				wealth = 50
 			}
 			#hidden_tooltip = {
-			ROOT = {
-				AND = {
-					custom_tooltip = {
-						text = da_ttip_control_the_current_dejure_duchy
-						hidden_tooltip = {
-							location = {
-								duchy = {
-									OR = {
-										has_holder = no
-										holder_scope = {
-											OR = { 
-												character = FROM
-												top_liege = {
+				ROOT = {
+					AND = {
+						#custom_tooltip = {
+							#text = da_ttip_control_the_current_dejure_duchy
+							#hidden_tooltip = {
+								location = {
+									duchy = {
+										OR = {
+											has_holder = no
+											holder_scope = {
+												OR = { 
 													character = FROM
+													de_facto_liege = FROM
 												}
 											}
 										}
-									}
-									kingdom = {
-										OR = {
-											FROM = {
-												any_realm_title = {
-													has_title_flag = adjudication_duchy_recipient 
-													de_jure_liege = PREVPREV
+										kingdom = {
+											OR = {
+												has_holder = no
+												holder_scope = {
+													OR = { 
+														character = FROM
+														de_facto_liege = FROM
+													}
 												}
 											}
-											AND = {
+											empire = {
 												OR = {
 													has_holder = no
 													holder_scope = {
 														OR = { 
 															character = FROM
-															top_liege = {
-																character = FROM
-															}
-														}
-													}
-												}
-												empire = {
-													OR = {
-														has_holder = no
-														holder_scope = {
-															OR = { 
-																character = FROM
-																top_liege = {
-																	character = FROM
-																}
-															}
+															de_facto_liege = FROM
 														}
 													}
 												}
@@ -381,113 +427,73 @@ title_decisions = {
 										}
 									}
 								}
-							}
-						}
-					}
-					custom_tooltip = {
-						text = da_ttip_control_the_current_target
-						hidden_tooltip = {
-							holder_scope = {
-								OR = { 
-									character = FROM
-									top_liege = {
-										character = FROM
+							#}
+						#}
+						custom_tooltip = {
+							text = da_ttip_control_the_current_target
+							hidden_tooltip = {
+								OR = {
+									has_holder = no
+									holder_scope = {
+										OR = {
+											character = FROM
+											de_facto_liege = FROM
+										}
 									}
 								}
-							}
-						}	
+							}	
+						}
 					}
 				}
-			}
 			#}
 		}
 		#Effect Block
 		effect = {
-			FROM = 
-			{
-				hidden_tooltip = {
-					if = {
-						limit = {
-							any_title_under = {
-								count = 2
-								limit = {
-									real_tier = DUKE
-									has_title_flag = adjudication_duchy_recipient
-								}
-							}
-						}
-						## OOPS!!!! How did that happen? Gained such a title I suppose . . . Will need an Error Event
-						any_title_under = {
-							limit = {
-								real_tier = DUKE
-								has_title_flag = adjudication_duchy_recipient
-							}
-							clr_title_flag = adjudication_duchy_recipient
-						}
-					}
-				}
+			FROM = {
 				if = {
-					
 					limit = {
-						NOT = {
-							any_title_under = {
-								count = 2
-								limit = {
-									real_tier = DUKE
-									has_title_flag = adjudication_duchy_recipient 
-								}
-							}
-						}
-					}
-					if = {
-						limit = {
-							ROOT = {
-								location = {
-									duchy = {
-										AND = {
-											has_holder = yes
-											NOT = {
-												holder_scope = {
-													character = FROM
-												}
-											}
-										}
-									}
-								}
-							}
-						}
 						ROOT = {
-							location = {
-								duchy = {
-									holder_scope = {
-										opinion = {
-											modifier = opinion_tyrant
-											who = FROM
+							duchy = {
+								AND = {
+									has_holder = yes
+									NOT = {
+										holder_scope = {
+											character = FROM
 										}
 									}
 								}
 							}
 						}
 					}
-					
-					any_title_under = {
-						limit = {
-							real_tier = DUKE
-							has_title_flag = adjudication_duchy_recipient
-						}
-						custom_tooltip = {
-							text = da_ttip_transfer
-							hidden_tooltip = {
-								ROOT = {
-									de_jure_liege = PREV
+					ROOT = {
+						duchy = {
+							holder_scope = {
+								opinion = {
+									modifier = opinion_tyrant
+									who = FROM
 								}
 							}
 						}
 					}
-					wealth = -50
-					piety = -100
-					prestige = -100
 				}
+				
+				any_title_under = {
+					limit = {
+						da_has_title_id = yes
+						is_variable_equal = { which = da_title_id which = FROM }
+					}
+					custom_tooltip = {
+						text = da_ttip_transfer
+						hidden_tooltip = {
+							ROOT = {
+								de_jure_liege = PREV
+							}
+						}
+					}
+				}
+				wealth = -50
+				piety = -100
+				prestige = -100
 			}
 		}
 		#Revoke Allowed Block?
@@ -500,88 +506,6 @@ title_decisions = {
 		}
 	}
 ## 	/Transfer County to Recipient Duchy
-
-##--################################################################
-##	Designate Kingdom As Duchy Recipient
-##--################################################################
-	da_designate_recipient_kingdom = {
-		#Filter Block - Ai Filter Block
-		filter = realm_owned
-		ai_target_filter = primary_title
-		
-		#From potential Block - "The Decider"
-		from_potential = {
-			ai = no
-			
-			#is_nomadic = yes
-			#has_dlc = "Horse Lords"
-		}
-		
-		#Potential Block - Title in Question
-		potential = {
-			real_tier = KING
-			holder_scope = {
-				OR = { 
-					character = FROM
-					top_liege = {
-						character = FROM
-					}
-				}
-			}
-		}
-		
-		#Allow Block
-		allow = {
-			custom_tooltip = {
-				text = da_ttip_is_current_designate
-				hidden_tooltip = {
-					NOT = {
-						has_title_flag = adjudication_king_recipient
-					}
-				}
-			}
-			FROM = {
-				custom_tooltip = {
-					text = da_ttip_adult_free_capable_independent
-					hidden_tooltip = {
-						is_adult = yes
-						prisoner = no
-						NOT = { trait = incapable }
-						independent = yes
-					}
-				}
-			}
-
-		}
-		
-		#Effect Block
-		effect = {
-			custom_tooltip = {
-				text = da_ttip_this_is_designated_kingdom
-				hidden_tooltip = {
-					FROM = {
-						any_title_under = {
-							limit = {
-								real_tier = KING
-								has_title_flag = adjudication_king_recipient
-							}
-							clr_title_flag = adjudication_king_recipient
-						}
-					}
-					set_title_flag = adjudication_king_recipient
-				}
-			}
-		}
-		#Revoke Allowed Block?
-		revoke_allowed = {
-			always = no
-		}
-		#Ai Will Do Block
-		ai_will_do = {
-			factor = 0
-		}
-	}
-## 	/Designate Kingdom As Duchy Recipient
 
 ##--################################################################
 ##	Transfer Duchy to Recipient Kingdom 
@@ -601,12 +525,17 @@ title_decisions = {
 		
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			real_tier = DUKE
-			holder_scope = {
-				OR = { 
-					character = FROM
-					top_liege = {
+			OR = {
+				AND = {
+					has_holder = no
+					FROM = { completely_controls = ROOT }
+				}
+				holder_scope = {
+					OR = {
 						character = FROM
+						de_facto_liege = FROM
 					}
 				}
 			}
@@ -618,36 +547,24 @@ title_decisions = {
 				custom_tooltip = {
 					text = da_ttip_one_is_designated
 					hidden_tooltip = {
+						has_character_flag = da_has_title_recipient_id
 						any_realm_title = {
-							has_title_flag = adjudication_king_recipient 
-							NOT = {
-								ROOT = {
-									de_jure_liege = PREV
+							AND = {
+								da_has_title_id = yes
+								real_tier = KING
+								is_variable_equal = { which = da_title_id which = FROM }
+								NOT = {
+									ROOT = {
+										de_jure_liege = PREV
+									}
 								}
 							}
 						}
 					}
 				}
-				custom_tooltip = {
-					text = da_ttip_more_than_one_designate
-					hidden_tooltip = {
-						NOT = {
-							any_realm_title = {
-								count = 2
-								has_title_flag = adjudication_king_recipient 
-							}
-						}
-					}
-				}
-				custom_tooltip = {
-					text = da_ttip_adult_free_capable_independent
-					hidden_tooltip = {
-						is_adult = yes
-						prisoner = no
-						NOT = { trait = incapable }
-						independent = yes
-					}
-				}
+				is_adult = yes
+				prisoner = no
+				NOT = { trait = incapable }
 				prestige = 200
 				piety = 200
 				wealth = 100
@@ -655,9 +572,9 @@ title_decisions = {
 			#hidden_tooltip = {
 				ROOT = {
 					AND = {
-						custom_tooltip = {
-							text = da_ttip_control_the_current_dejure_kingdom
-							hidden_tooltip = {
+						#custom_tooltip = {
+							#text = da_ttip_control_the_current_dejure_kingdom
+							#hidden_tooltip = {
 								kingdom = {
 									OR = {
 										has_holder = no
@@ -672,36 +589,29 @@ title_decisions = {
 									}
 									empire = {
 										OR = {
-											FROM = {
-												any_realm_title = {
-													has_title_flag = adjudication_king_recipient 
-													de_jure_liege = PREVPREV
-												}
-											}
-											OR = {
-												has_holder = no
-												holder_scope = {
-													OR = { 
+											has_holder = no
+											holder_scope = {
+												OR = { 
+													character = FROM
+													top_liege = {
 														character = FROM
-														top_liege = {
-															character = FROM
-														}
 													}
 												}
 											}
 										}
 									}
 								}
-							}
-						}
+							#}
+						#}
 						custom_tooltip = {
 							text = da_ttip_control_the_current_target
 							hidden_tooltip = {
-								holder_scope = {
-									OR = { 
-										character = FROM
-										top_liege = {
+								OR = {
+									has_holder = no
+									holder_scope = {
+										OR = { 
 											character = FROM
+											de_facto_liege = FROM
 										}
 									}
 								}
@@ -713,87 +623,51 @@ title_decisions = {
 		}
 		#Effect Block
 		effect = {
-			FROM = 
-			{
-				hidden_tooltip = {
-					if = {
-						limit = {
-							any_title_under = {
-								count = 2
-								limit = {
-									real_tier = KING
-									has_title_flag = adjudication_king_recipient
-								}
-							}
-						}
-						## OOPS!!!! How did that happen? Gained such a title I suppose . . . Will need an Error Event
-						any_title_under = {
-							limit = {
-								real_tier = KING
-								has_title_flag = adjudication_king_recipient
-							}
-							clr_title_flag = adjudication_king_recipient
-						}
-					}
-				}
+			FROM = {
 				if = {
-					
 					limit = {
-						NOT = {
-							any_title_under = {
-								count = 2
-								limit = {
-									real_tier = KING
-									has_title_flag = adjudication_king_recipient 
-								}
-							}
-						}
-					}
-					if = {
-						limit = {
-							ROOT = {
-								kingdom = {
-									AND = {
-										has_holder = yes
-										NOT = {
-											holder_scope = {
-												character = FROM
-											}
+						ROOT = {
+							kingdom = {
+								AND = {
+									has_holder = yes
+									NOT = {
+										holder_scope = {
+											character = FROM
 										}
 									}
 								}
 							}
 						}
-						ROOT = {
-							kingdom = {
-								holder_scope = {
-									opinion = {
-										modifier = opinion_tyrant
-										who = FROM
-									}
+					}
+					ROOT = {
+						kingdom = {
+							holder_scope = {
+								opinion = {
+									modifier = opinion_tyrant
+									who = FROM
 								}
 							}
 						}
 					}
-					
-					any_title_under = {
-						limit = {
-							real_tier = KING
-							has_title_flag = adjudication_king_recipient
-						}
-						custom_tooltip = {
-							text = da_ttip_transfer
-							hidden_tooltip = {
-								ROOT = {
-									de_jure_liege = PREV
-								}
-							}
-						}
-					}
-					wealth = -100
-					piety = -200
-					prestige = -200
 				}
+				
+				any_title_under = {
+					limit = {
+						da_has_title_id = yes
+						is_variable_equal = { which = da_title_id which = FROM }
+					}
+					custom_tooltip = {
+						text = da_ttip_transfer
+						hidden_tooltip = {
+							ROOT = {
+								de_jure_liege = PREV
+							}
+						}
+					}
+				}
+				wealth = -100
+				piety = -200
+				prestige = -200
 			}
 		}
 		#Revoke Allowed Block?
@@ -806,87 +680,6 @@ title_decisions = {
 		}
 	}
 ## 	/Transfer Duchy to Recipient Kingdom
-
-##--################################################################
-##	Designate Empire As Kingdom Recipient
-##--################################################################
-	da_designate_recipient_empire = {
-		#Filter Block - Ai Filter Block
-		filter = realm_owned
-		ai_target_filter = primary_title
-		
-		#From potential Block - "The Decider"
-		from_potential = {
-			ai = no
-			
-			#is_nomadic = yes
-			#has_dlc = "Horse Lords"
-		}
-		
-		#Potential Block - Title in Question
-		potential = {
-			real_tier = EMPEROR
-			holder_scope = {
-				OR = { 
-					character = FROM
-					top_liege = {
-						character = FROM
-					}
-				}
-			}
-		}
-		
-		#Allow Block
-		allow = {
-			custom_tooltip = {
-				text = da_ttip_is_current_designate
-				hidden_tooltip = {
-					NOT = {
-						has_title_flag = adjudication_emperor_recipient
-					}
-				}
-			}
-			FROM = {
-				custom_tooltip = {
-					text = da_ttip_adult_free_capable_independent
-					hidden_tooltip = {
-						is_adult = yes
-						prisoner = no
-						NOT = { trait = incapable }
-						independent = yes
-					}
-				}
-			}
-		}
-		
-		#Effect Block
-		effect = {
-			custom_tooltip = {
-				text = da_ttip_this_is_designated_empire
-				hidden_tooltip = {
-					FROM = {
-						any_title_under = {
-							limit = {
-								real_tier = EMPEROR
-								has_title_flag = adjudication_emperor_recipient
-							}
-							clr_title_flag = adjudication_emperor_recipient
-						}
-					}
-					set_title_flag = adjudication_emperor_recipient
-				}
-			}
-		}
-		#Revoke Allowed Block?
-		revoke_allowed = {
-			always = no
-		}
-		#Ai Will Do Block
-		ai_will_do = {
-			factor = 0
-		}
-	}
-## 	/Designate Empire As Kingdom Recipient
 
 ##--################################################################
 ##	Transfer Kingdom to Recipient Empire 
@@ -906,12 +699,17 @@ title_decisions = {
 		
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			real_tier = KING
-			holder_scope = {
-				OR = { 
-					character = FROM
-					top_liege = {
+			OR = {
+				AND = {
+					has_holder = no
+					FROM = { completely_controls = ROOT }
+				}
+				holder_scope = {
+					OR = {
 						character = FROM
+						de_facto_liege = FROM
 					}
 				}
 			}
@@ -920,39 +718,27 @@ title_decisions = {
 		#Allow Block
 		allow = {
 			FROM = {
-				custom_tooltip = {
-					text = da_ttip_one_is_designated
-					hidden_tooltip = {
+				#custom_tooltip = {
+					#text = da_ttip_one_is_designated
+					#hidden_tooltip = {
+						has_character_flag = da_has_title_recipient_id
 						any_realm_title = {
-							has_title_flag = adjudication_emperor_recipient 
-							NOT = {
-								ROOT = {
-									de_jure_liege = PREV
+							AND = {
+								da_has_title_id = yes
+								real_tier = EMPEROR
+								is_variable_equal = { which = da_title_id which = FROM }
+								NOT = {
+									ROOT = {
+										de_jure_liege = PREV
+									}
 								}
 							}
 						}
-					}
-				}
-				custom_tooltip = {
-					text = da_ttip_more_than_one_designate
-					hidden_tooltip = {
-						NOT = {
-							any_realm_title = {
-								count = 2
-								has_title_flag = adjudication_emperor_recipient 
-							}
-						}
-					}
-				}
-				custom_tooltip = {
-					text = da_ttip_adult_free_capable_independent
-					hidden_tooltip = {
-						is_adult = yes
-						prisoner = no
-						NOT = { trait = incapable }
-						independent = yes
-					}
-				}
+					#}
+				#}
+				is_adult = yes
+				prisoner = no
+				NOT = { trait = incapable }
 				prestige = 400
 				piety = 400
 				wealth = 200
@@ -981,11 +767,12 @@ title_decisions = {
 						custom_tooltip = {
 							text = da_ttip_control_the_current_target
 							hidden_tooltip = {
-								holder_scope = {
-									OR = { 
-										character = FROM
-										top_liege = {
+								OR = {
+									has_holder = no
+									holder_scope = {
+										OR = { 
 											character = FROM
+											de_facto_liege = FROM
 										}
 									}
 								}
@@ -998,57 +785,23 @@ title_decisions = {
 		#Effect Block
 		effect = {
 			FROM = {
-				hidden_tooltip = {
-					if = {
-						limit = {
-							any_title_under = {
-								count = 2
-								limit = {
-									real_tier = EMPEROR
-									has_title_flag = adjudication_emperor_recipient
-								}
-							}
-						}
-						## OOPS!!!! How did that happen? Gained such a title I suppose . . . Will need an Error Event
-						any_title_under = {
-							limit = {
-								real_tier = EMPEROR
-								has_title_flag = adjudication_emperor_recipient
-							}
-							clr_title_flag = adjudication_emperor_recipient
-						}
-					}
-				}
-				if = {
+				any_title_under = {
 					limit = {
-						NOT = {
-							any_title_under = {
-								count = 2
-								limit = {
-									real_tier = EMPEROR
-									has_title_flag = adjudication_emperor_recipient 
-								}
+						da_has_title_id = yes
+						is_variable_equal = { which = da_title_id which = FROM }
+					}
+					custom_tooltip = {
+						text = da_ttip_transfer
+						hidden_tooltip = {
+							ROOT = {
+								de_jure_liege = PREV
 							}
 						}
 					}
-					any_title_under = {
-						limit = {
-							real_tier = EMPEROR
-							has_title_flag = adjudication_emperor_recipient
-						}
-						custom_tooltip = {
-							text = da_ttip_transfer
-							hidden_tooltip = {
-								ROOT = {
-									de_jure_liege = PREV
-								}
-							}
-						}
-					}
-					wealth = -200
-					piety = -400
-					prestige = -400
 				}
+				wealth = -200
+				piety = -400
+				prestige = -400
 			}
 		}
 		#Revoke Allowed Block?
@@ -1082,13 +835,12 @@ title_decisions = {
 		}
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			real_tier = COUNT
 			holder_scope = {
 				OR = { 
 					character = FROM
-					top_liege = {
-						character = FROM
-					}
+					de_facto_liege = FROM
 				}
 			}
 			#holder_scope = {character = FROM}
@@ -1353,12 +1105,17 @@ title_decisions = {
 		}
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			real_tier = DUKE
-			holder_scope = {
-				OR = { 
-					character = FROM
-					top_liege = {
+			OR = {
+				AND = {
+					has_holder = no
+					FROM = { completely_controls = ROOT }
+				}
+				holder_scope = {
+					OR = { 
 						character = FROM
+						de_facto_liege = FROM
 					}
 				}
 			}
@@ -1654,12 +1411,17 @@ title_decisions = {
 		}
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			real_tier = KING
-			holder_scope = {
-				OR = { 
-					character = FROM
-					top_liege = {
+			OR = {
+				AND = {
+					has_holder = no
+					FROM = { completely_controls = ROOT }
+				}
+				holder_scope = {
+					OR = { 
 						character = FROM
+						de_facto_liege = FROM
 					}
 				}
 			}
@@ -1951,13 +1713,12 @@ title_decisions = {
 		}
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			real_tier = COUNT
 			holder_scope = {
 				OR = { 
 					character = FROM
-					top_liege = {
-						character = FROM
-					}
+					de_facto_liege = FROM
 				}
 			}
 			#holder_scope = {character = FROM}
@@ -2118,12 +1879,17 @@ title_decisions = {
 		}
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			real_tier = DUKE
-			holder_scope = {
-				OR = { 
-					character = FROM
-					top_liege = {
+			OR = {
+				AND = {
+					has_holder = no
+					FROM = { completely_controls = ROOT }
+				}
+				holder_scope = {
+					OR = { 
 						character = FROM
+						de_facto_liege = FROM
 					}
 				}
 			}
@@ -2359,12 +2125,17 @@ title_decisions = {
 		}
 		#Potential Block - Title in Question
 		potential = {
+			is_title_active = yes
 			real_tier = KING
-			holder_scope = {
-				OR = { 
-					character = FROM
-					top_liege = {
+			OR = {
+				AND = {
+					has_holder = no
+					FROM = { completely_controls = ROOT }
+				}
+				holder_scope = {
+					OR = { 
 						character = FROM
+						de_facto_liege = FROM
 					}
 				}
 			}
@@ -2576,34 +2347,6 @@ title_decisions = {
 ## /Create Titular Empire
 }
 
-# decisions = {
-	# form_new_kingdom = {
-		# potential = {
-			# always = no #NEVA!
-		# }
-		# allow = {
-			# always = no #NEVA!
-		# }
-		# effect = {
-		# }
-		# ai_will_do = {
-			# factor = 0
-		# }
-	# }
-	# form_new_empire = {
-		# potential = {
-			# always = no #NEVA!
-		# }
-		# allow = {
-			# always = no #NEVA!
-		# }
-		# effect = {
-		# }
-		# ai_will_do = {
-			# factor = 0
-		# }
-	# }
-# }
 ##--################################################################
 ##	/Dejure Adjudication Mod - Have a nice day!
 ##--################################################################

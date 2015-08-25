@@ -1,0 +1,14 @@
+
+# Check whether a title has an ID assigned.
+# Yes I know it's rather simple,
+# the point is to abstract this out
+# so that if a mechanism to set if a variable has been set is added
+# that we can do away with the flag without changing everything.
+da_has_title_id = {
+	custom_tooltip = {
+		text = da_has_title_id_tooltip
+		hidden_tooltip = {
+			has_title_flag = has_da_title_id
+		}
+	}
+}

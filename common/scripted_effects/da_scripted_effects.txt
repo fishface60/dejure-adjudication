@@ -1,0 +1,27 @@
+
+# Sets da_title_id in the current scope to one higher than any current da_title_id
+# Before running, check if an ID has already been assigned with da_has_title_id
+# Before retrieving da_title_id, check if it has one with da_has_title_id
+da_assign_title_id = {
+	custom_tooltip = {
+		text = da_assign_title_id_tooltip
+		any_title = {
+			if = {
+				limit = {
+					AND = {
+						# Title flag check necessary as unset value may be garbage
+						has_title_flag = has_da_title_id
+						# check if this ID > previous
+						# (actually checks >=, but we assume it can't be equal
+						check_variable = { which = da_title_id which = PREVPREV }
+					}
+				}
+				PREVPREV = {
+					set_variable = { which = da_title_id which = PREV }
+				}
+			}
+		}
+		change_variable = { which = da_title_id value = 1 }
+		set_title_flag = has_da_title_id
+	}
+}
