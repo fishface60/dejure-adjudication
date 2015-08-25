@@ -269,7 +269,13 @@ title_decisions = {
 				real_tier = KING
 				real_tier = EMPEROR
 			}
-			is_title_active = yes
+
+			# Technical limitation, you can't assign to a title
+			# without a holder, because it is not part of the
+			# any_realm_title scope, and use of any_title in the
+			# trigger instead causes CK2 to crash.
+			has_holder = yes
+
 			holder_scope = {
 				OR = {
 					character = FROM
