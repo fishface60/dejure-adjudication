@@ -264,6 +264,11 @@ title_decisions = {
 		
 		#Potential Block - Title in Question
 		potential = {
+			OR = {
+				real_tier = DUKE
+				real_tier = KING
+				real_tier = EMPEROR
+			}
 			is_title_active = yes
 			holder_scope = {
 				OR = {
