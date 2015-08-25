@@ -126,8 +126,6 @@
 ##				to compare, and the name of the variable in
 ##				that scope.
 ##
-##				TODO: Use de-jure Liege instead of top-liege so as a vassal you can alter your de-jure vassal assignments.
-##				TODO: Verify you can't declare a Barony/County as a recipient.
 ##				TODO: Fix commented out code.
 ##				TODO: Fix trailing whitespace.
 ##				TODO: Factor out duplicated logic.
@@ -149,7 +147,9 @@
 ##				the titular capital when it has no de-jure
 ##				territory.
 ##
-##				TODO: You must still create titles that you want to designate as the recipient title.
+##				Due to technical limitations, you must still
+##				create titles that you want to designate as the
+##				recipient title.
 ##
 ##
 ##	Readme:
