@@ -279,9 +279,7 @@ title_decisions = {
 			holder_scope = {
 				OR = {
 					character = FROM
-					top_liege = {
-						character = FROM
-					}
+					de_facto_liege = FROM
 				}
 			}
 		}
@@ -366,7 +364,7 @@ title_decisions = {
 			is_title_active = yes
 			real_tier = COUNT
 			holder_scope = {
-				OR = { 
+				OR = {
 					character = FROM
 					de_facto_liege = FROM
 				}
@@ -596,9 +594,7 @@ title_decisions = {
 										holder_scope = {
 											OR = { 
 												character = FROM
-												top_liege = {
-													character = FROM
-												}
+												de_facto_liege = FROM
 											}
 										}
 									}
@@ -608,9 +604,7 @@ title_decisions = {
 											holder_scope = {
 												OR = { 
 													character = FROM
-													top_liege = {
-														character = FROM
-													}
+													de_facto_liege = FROM
 												}
 											}
 										}
@@ -770,9 +764,7 @@ title_decisions = {
 										holder_scope = {
 											OR = { 
 												character = FROM
-												top_liege = {
-													character = FROM
-												}
+												de_facto_liege = FROM
 											}
 										}
 									}
@@ -972,9 +964,7 @@ title_decisions = {
 																			holder_scope = {
 																				OR = { 
 																					character = FROM
-																					top_liege = {
-																						character = FROM
-																					}
+																					de_facto_liege = FROM
 																				}
 																			}
 																		}
