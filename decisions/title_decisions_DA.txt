@@ -1,0 +1,2609 @@
+##--################################################################
+##	Dejure Adjudication Mod
+##  By:			Occult Orison
+##
+##	Modified:	7/27/2015	v0.1		Occult Orison
+##	  =Created
+##		-Able to create Duchy/Kingdom/Empire from any title one 
+##			rank lower
+##		-If this increases rank, all realm titles one rank 
+##			below will auto-magically de-jure drift into the new
+##			title, unless the title they de-jure belong to already 
+##			exists.
+##		-The new title will try to copy the most appropriate laws
+##		-Only top-liege can create new titles of equal or lesser rank
+##			than his own.
+##		-In such cases, only the base title will auto-magically 
+##			de-jure drift into the new title
+##		-It requires piety, prestige, cash, an able mind, and good 
+##			standing with your religion head, and grants prestige
+##		-It can not be repeated on the same base title
+##		-Currently AI can only use this on their primary title
+##		-AI always have a chance to do this, but it is low if they
+##			aren't ambitious, proud, or prestigious, and ridiculously
+##			low if content, humble, or lack prestige (0.0001/1)
+##
+##	Modified: 8/1/2015 		v0.2		Occult Orison
+##		=Update
+##			-Able to Re-Assign (Adjudicate) the de-jure liege of
+##				county, duchy, and kingdom titles in realm
+##			-Costs Prestige, Piety, Cash, and may upset holders of 
+##				titles which lose de-jure vassal titles
+##			-Addressed issue where you could create new titles from
+##				lower titles not owned by you, despite the filter
+##				being sub_realm_owned
+##
+##	Modified: 8/1/2015		v0.2.1		Occult Orison
+##		=Minor Update
+##			-Moved defines into own file for compatibility 
+##
+##	Modified: 8/1/2015		v0.3		Occult Orison
+##		=Update
+##			-Addressed issue where a title could be transferred to 
+##				its current de jure liege title
+##			-Addressed issue where vassal could change the designate 
+##			-Added English localisation text for everything
+##			-Fixed bug where transferring kingdoms into new empires
+##				were attempting to transfer into the designated kingdom
+##
+##	Modified: 8/2/2015		v0.4		Occult Orison
+##		=Update
+##			-Realized the sub_realm_owned filter does not work at all, and 
+##				added requirements to all decisions to fix this, which
+##				means now you can't designate recipient titles outside
+##				your realm
+##			-Fixed it so that you can not de jure drift titles out 
+##				of their original titles if any liege above that title
+##				exists, not just the immediate liege. The exception
+##				being if you move it to a title that shares the de jure
+##				liege of the previous one. Ex: As Lombardy in CM start
+##				you can move the county of benevento into the duchy of capua
+##				(which has the same de jure liege as duchy of benevento)
+##				but not into the duchy of latinum (different de jure liege)
+##			-The approval of your religious head requirement now
+##				applies to your rightful religious head. Which means
+##				your anti-pope or patriarch if you have one instead.
+##			-Added the ability to create titular titles instead of de jure.
+##				It acts the same and has the same requirements, only 
+##				nothing de jure drifts into the new title. The title will
+##				still be a de jure vassal to the correct liege
+##				Ex: titular duchy from a county won't have that county
+##				as a de jure vassal but will be a de jure vassal of the
+##				kingdom that county belongs to.
+##	
+##	Modified: 8/6/2015		v0.4.1		Occult Orison
+##		=Minor Update
+##			-Created non-functional duplicates of Form Kingdom/Empire decisons
+##				to intentionally break them so that I can disable them
+##				without overriding realm_decisions.txt
+##	
+##	Modified: 8/6/2015		v0.4.2		Occult Orison
+##		=Minor Update
+##			-Re-reenabled the Form Kingdom/Empire decisons because disabling
+##				them was too ugly
+##
+##	Readme:
+##			Decisions to replace and augment the "Form New 
+##		Kingdom/Empire" decisions from CM Dlc to use targeted 
+##		decisions on titles. 
+##			You have my permission to reuse my work as long as I am 
+##		credited, but idk how I would stop you anyways.
+##			If you find any bugs or I have done something 
+##		embarrassing, please inform me, thanks!
+##--################################################################
+# Title decisions are possible vs _all_ titles and are shown in the Title Diplomacy View, not the Intrigue View. The taker is in the FROM scope.
+#
+# filter = [capital/primary_title/owned/vassal_owned/sub_realm_owned/realm_owned/dynasty_owned/all]
+# ai_target_filter = [capital/primary_title/owned/vassal_owned/sub_realm_owned/realm_owned/dynasty_owned/all] (which titles for which the AI evaluates the decision.)
+#	owned: all titles owned by the AI
+#	vassal_owned: all titles owned by direct vassal rulers of the AI's employer
+#	sub_realm_owned: all titles below the AI's employer
+#	realm_owned: all titles in the same top realm as the AI
+#	dynasty_owned: all titles owned by members of the same dynasty
+#	all: all titles (Avoid if possible. VERY CPU-HEAVY!)
+#	
+
+##--################################################################
+##	Template
+##--################################################################
+	# #Decision Name
+	# decision_name = {
+		# #Filter Block - Ai Filter Block
+		# filter = sub_realm_owned
+		# ai_target_filter = sub_realm_owned
+		
+		# #From potential Block - "The Decider"
+		# from_potential = {
+			# #is_nomadic = yes
+			# #has_dlc = "Horse Lords"
+		# }
+		
+		# #Potential Block - Title in Question
+		# potential = {
+			# #tier = COUNT #Title Tier 
+			# #location = { #location refers to title
+			# #	owner = {
+			# #		same_realm = FROM
+			# #	}
+			# #	any_neighbor_province = {
+			# #		owner = {
+			# #			NOT = { same_realm = FROM }
+			# #		}
+			# #	}
+			# #}
+		# }
+		
+		# #Allow Block
+		# allow = {
+			# #NOT = { num_of_settlements = 1 }
+			# #has_siege = no
+			# #FROM = {
+			# #	war = no
+			# #}
+			# #location = {
+			# #	NOT = { has_province_modifier = nomads_exploited_land }
+			# #}
+		# }
+		
+		# #Effect Block
+		# effect = {
+			# #holder_scope = {
+			# #	capital_holding = {
+			# #		add_holding_modifier = {
+			# #			modifier = nomad_population_boom
+			# #			years = 8
+			# #			stacking = yes
+			# #		}
+			# #	}
+			# #}
+			# #location = {
+			# #	add_province_modifier = {
+			# #		modifier = nomads_exploited_land
+			# #		years = 8
+			# #	}
+			# #}
+		# }
+		# #Revoke Allowed Block?
+		# revoke_allowed = {
+			# always = no
+		# }
+		# #Ai Will Do Block
+		# ai_will_do = {
+			# factor = 0
+		# }
+	# }
+##	/Template
+
+title_decisions = {
+
+##--################################################################
+##	Designate Duchy As County Recipient
+##--################################################################
+	da_designate_recipient_duchy = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			ai = no
+			#is_nomadic = yes
+			#has_dlc = "Horse Lords"
+		}
+		
+		#Potential Block - Title in Question
+		potential = {
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+			real_tier = DUKE
+		}
+		
+		#Allow Block
+		allow = {
+			custom_tooltip = {
+				text = da_ttip_is_current_designate
+				hidden_tooltip = {
+					NOT = {
+						has_title_flag = adjudication_duchy_recipient
+					}
+				}
+			}
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+			}
+		}
+		
+		#Effect Block
+		effect = {
+			custom_tooltip = {
+				text = da_ttip_this_is_designated_duchy
+				hidden_tooltip = {
+					FROM = {
+						any_title_under = {
+							limit = {
+								real_tier = DUKE
+								has_title_flag = adjudication_duchy_recipient
+							}
+							clr_title_flag = adjudication_duchy_recipient
+						}
+					}
+					set_title_flag = adjudication_duchy_recipient
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 0
+		}
+	}
+## 	/Designate Duchy As County Recipient
+
+##--################################################################
+##	Transfer County to Recipient Duchy 
+##--################################################################
+	da_transfer_county_to_recipient_duchy = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			ai = no
+			higher_real_tier_than = COUNT
+			has_dlc = "Charlemagne"
+			is_playable = yes
+		}
+		
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = COUNT
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+		}
+		
+		#Allow Block
+		allow = {
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_one_is_designated
+					hidden_tooltip = {
+						any_realm_title = {
+							has_title_flag = adjudication_duchy_recipient 
+							NOT = {
+								ROOT = {
+									de_jure_liege = PREV
+								}
+							}
+						}
+					}
+				}
+				custom_tooltip = {
+					text = da_ttip_more_than_one_designate
+					hidden_tooltip = {
+						NOT = {
+							any_realm_title = {
+								count = 2
+								has_title_flag = adjudication_duchy_recipient 
+							}
+						}
+					}
+				}
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+				prestige = 100
+				piety = 100
+				wealth = 50
+			}
+			#hidden_tooltip = {
+			ROOT = {
+				AND = {
+					custom_tooltip = {
+						text = da_ttip_control_the_current_dejure_duchy
+						hidden_tooltip = {
+							location = {
+								duchy = {
+									OR = {
+										has_holder = no
+										holder_scope = {
+											OR = { 
+												character = FROM
+												top_liege = {
+													character = FROM
+												}
+											}
+										}
+									}
+									kingdom = {
+										OR = {
+											FROM = {
+												any_realm_title = {
+													has_title_flag = adjudication_duchy_recipient 
+													de_jure_liege = PREVPREV
+												}
+											}
+											AND = {
+												OR = {
+													has_holder = no
+													holder_scope = {
+														OR = { 
+															character = FROM
+															top_liege = {
+																character = FROM
+															}
+														}
+													}
+												}
+												empire = {
+													OR = {
+														has_holder = no
+														holder_scope = {
+															OR = { 
+																character = FROM
+																top_liege = {
+																	character = FROM
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					custom_tooltip = {
+						text = da_ttip_control_the_current_target
+						hidden_tooltip = {
+							holder_scope = {
+								OR = { 
+									character = FROM
+									top_liege = {
+										character = FROM
+									}
+								}
+							}
+						}	
+					}
+				}
+			}
+			#}
+		}
+		#Effect Block
+		effect = {
+			FROM = 
+			{
+				hidden_tooltip = {
+					if = {
+						limit = {
+							any_title_under = {
+								count = 2
+								limit = {
+									real_tier = DUKE
+									has_title_flag = adjudication_duchy_recipient
+								}
+							}
+						}
+						## OOPS!!!! How did that happen? Gained such a title I suppose . . . Will need an Error Event
+						any_title_under = {
+							limit = {
+								real_tier = DUKE
+								has_title_flag = adjudication_duchy_recipient
+							}
+							clr_title_flag = adjudication_duchy_recipient
+						}
+					}
+				}
+				if = {
+					
+					limit = {
+						NOT = {
+							any_title_under = {
+								count = 2
+								limit = {
+									real_tier = DUKE
+									has_title_flag = adjudication_duchy_recipient 
+								}
+							}
+						}
+					}
+					if = {
+						limit = {
+							ROOT = {
+								location = {
+									duchy = {
+										AND = {
+											has_holder = yes
+											NOT = {
+												holder_scope = {
+													character = FROM
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						ROOT = {
+							location = {
+								duchy = {
+									holder_scope = {
+										opinion = {
+											modifier = opinion_tyrant
+											who = FROM
+										}
+									}
+								}
+							}
+						}
+					}
+					
+					any_title_under = {
+						limit = {
+							real_tier = DUKE
+							has_title_flag = adjudication_duchy_recipient
+						}
+						custom_tooltip = {
+							text = da_ttip_transfer
+							hidden_tooltip = {
+								ROOT = {
+									de_jure_liege = PREV
+								}
+							}
+						}
+					}
+					wealth = -50
+					piety = -100
+					prestige = -100
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 0
+		}
+	}
+## 	/Transfer County to Recipient Duchy
+
+##--################################################################
+##	Designate Kingdom As Duchy Recipient
+##--################################################################
+	da_designate_recipient_kingdom = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			ai = no
+			
+			#is_nomadic = yes
+			#has_dlc = "Horse Lords"
+		}
+		
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = KING
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+		}
+		
+		#Allow Block
+		allow = {
+			custom_tooltip = {
+				text = da_ttip_is_current_designate
+				hidden_tooltip = {
+					NOT = {
+						has_title_flag = adjudication_king_recipient
+					}
+				}
+			}
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+			}
+
+		}
+		
+		#Effect Block
+		effect = {
+			custom_tooltip = {
+				text = da_ttip_this_is_designated_kingdom
+				hidden_tooltip = {
+					FROM = {
+						any_title_under = {
+							limit = {
+								real_tier = KING
+								has_title_flag = adjudication_king_recipient
+							}
+							clr_title_flag = adjudication_king_recipient
+						}
+					}
+					set_title_flag = adjudication_king_recipient
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 0
+		}
+	}
+## 	/Designate Kingdom As Duchy Recipient
+
+##--################################################################
+##	Transfer Duchy to Recipient Kingdom 
+##--################################################################
+	da_transfer_duchy_to_recipient_kingdom = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			ai = no
+			higher_real_tier_than = DUKE
+			has_dlc = "Charlemagne"
+			is_playable = yes
+		}
+		
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = DUKE
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+		}
+		
+		#Allow Block
+		allow = {
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_one_is_designated
+					hidden_tooltip = {
+						any_realm_title = {
+							has_title_flag = adjudication_king_recipient 
+							NOT = {
+								ROOT = {
+									de_jure_liege = PREV
+								}
+							}
+						}
+					}
+				}
+				custom_tooltip = {
+					text = da_ttip_more_than_one_designate
+					hidden_tooltip = {
+						NOT = {
+							any_realm_title = {
+								count = 2
+								has_title_flag = adjudication_king_recipient 
+							}
+						}
+					}
+				}
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+				prestige = 200
+				piety = 200
+				wealth = 100
+			}
+			#hidden_tooltip = {
+				ROOT = {
+					AND = {
+						custom_tooltip = {
+							text = da_ttip_control_the_current_dejure_kingdom
+							hidden_tooltip = {
+								kingdom = {
+									OR = {
+										has_holder = no
+										holder_scope = {
+											OR = { 
+												character = FROM
+												top_liege = {
+													character = FROM
+												}
+											}
+										}
+									}
+									empire = {
+										OR = {
+											FROM = {
+												any_realm_title = {
+													has_title_flag = adjudication_king_recipient 
+													de_jure_liege = PREVPREV
+												}
+											}
+											OR = {
+												has_holder = no
+												holder_scope = {
+													OR = { 
+														character = FROM
+														top_liege = {
+															character = FROM
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						custom_tooltip = {
+							text = da_ttip_control_the_current_target
+							hidden_tooltip = {
+								holder_scope = {
+									OR = { 
+										character = FROM
+										top_liege = {
+											character = FROM
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			#}
+		}
+		#Effect Block
+		effect = {
+			FROM = 
+			{
+				hidden_tooltip = {
+					if = {
+						limit = {
+							any_title_under = {
+								count = 2
+								limit = {
+									real_tier = KING
+									has_title_flag = adjudication_king_recipient
+								}
+							}
+						}
+						## OOPS!!!! How did that happen? Gained such a title I suppose . . . Will need an Error Event
+						any_title_under = {
+							limit = {
+								real_tier = KING
+								has_title_flag = adjudication_king_recipient
+							}
+							clr_title_flag = adjudication_king_recipient
+						}
+					}
+				}
+				if = {
+					
+					limit = {
+						NOT = {
+							any_title_under = {
+								count = 2
+								limit = {
+									real_tier = KING
+									has_title_flag = adjudication_king_recipient 
+								}
+							}
+						}
+					}
+					if = {
+						limit = {
+							ROOT = {
+								kingdom = {
+									AND = {
+										has_holder = yes
+										NOT = {
+											holder_scope = {
+												character = FROM
+											}
+										}
+									}
+								}
+							}
+						}
+						ROOT = {
+							kingdom = {
+								holder_scope = {
+									opinion = {
+										modifier = opinion_tyrant
+										who = FROM
+									}
+								}
+							}
+						}
+					}
+					
+					any_title_under = {
+						limit = {
+							real_tier = KING
+							has_title_flag = adjudication_king_recipient
+						}
+						custom_tooltip = {
+							text = da_ttip_transfer
+							hidden_tooltip = {
+								ROOT = {
+									de_jure_liege = PREV
+								}
+							}
+						}
+					}
+					wealth = -100
+					piety = -200
+					prestige = -200
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 0
+		}
+	}
+## 	/Transfer Duchy to Recipient Kingdom
+
+##--################################################################
+##	Designate Empire As Kingdom Recipient
+##--################################################################
+	da_designate_recipient_empire = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			ai = no
+			
+			#is_nomadic = yes
+			#has_dlc = "Horse Lords"
+		}
+		
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = EMPEROR
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+		}
+		
+		#Allow Block
+		allow = {
+			custom_tooltip = {
+				text = da_ttip_is_current_designate
+				hidden_tooltip = {
+					NOT = {
+						has_title_flag = adjudication_emperor_recipient
+					}
+				}
+			}
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+			}
+		}
+		
+		#Effect Block
+		effect = {
+			custom_tooltip = {
+				text = da_ttip_this_is_designated_empire
+				hidden_tooltip = {
+					FROM = {
+						any_title_under = {
+							limit = {
+								real_tier = EMPEROR
+								has_title_flag = adjudication_emperor_recipient
+							}
+							clr_title_flag = adjudication_emperor_recipient
+						}
+					}
+					set_title_flag = adjudication_emperor_recipient
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 0
+		}
+	}
+## 	/Designate Empire As Kingdom Recipient
+
+##--################################################################
+##	Transfer Kingdom to Recipient Empire 
+##--################################################################
+	da_transfer_kingdom_to_recipient_empire = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			ai = no
+			higher_real_tier_than = KING
+			has_dlc = "Charlemagne"
+			is_playable = yes
+		}
+		
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = KING
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+		}
+		
+		#Allow Block
+		allow = {
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_one_is_designated
+					hidden_tooltip = {
+						any_realm_title = {
+							has_title_flag = adjudication_emperor_recipient 
+							NOT = {
+								ROOT = {
+									de_jure_liege = PREV
+								}
+							}
+						}
+					}
+				}
+				custom_tooltip = {
+					text = da_ttip_more_than_one_designate
+					hidden_tooltip = {
+						NOT = {
+							any_realm_title = {
+								count = 2
+								has_title_flag = adjudication_emperor_recipient 
+							}
+						}
+					}
+				}
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+				prestige = 400
+				piety = 400
+				wealth = 200
+			}
+			#hidden_tooltip = {
+				ROOT = {
+					AND = {
+						custom_tooltip = {
+							text = da_ttip_control_the_current_dejure_empire
+							hidden_tooltip = {
+								empire = {
+									OR = {
+										has_holder = no
+										holder_scope = {
+											OR = { 
+												character = FROM
+												top_liege = {
+													character = FROM
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						custom_tooltip = {
+							text = da_ttip_control_the_current_target
+							hidden_tooltip = {
+								holder_scope = {
+									OR = { 
+										character = FROM
+										top_liege = {
+											character = FROM
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			#}
+		}
+		#Effect Block
+		effect = {
+			FROM = {
+				hidden_tooltip = {
+					if = {
+						limit = {
+							any_title_under = {
+								count = 2
+								limit = {
+									real_tier = EMPEROR
+									has_title_flag = adjudication_emperor_recipient
+								}
+							}
+						}
+						## OOPS!!!! How did that happen? Gained such a title I suppose . . . Will need an Error Event
+						any_title_under = {
+							limit = {
+								real_tier = EMPEROR
+								has_title_flag = adjudication_emperor_recipient
+							}
+							clr_title_flag = adjudication_emperor_recipient
+						}
+					}
+				}
+				if = {
+					limit = {
+						NOT = {
+							any_title_under = {
+								count = 2
+								limit = {
+									real_tier = EMPEROR
+									has_title_flag = adjudication_emperor_recipient 
+								}
+							}
+						}
+					}
+					any_title_under = {
+						limit = {
+							real_tier = EMPEROR
+							has_title_flag = adjudication_emperor_recipient
+						}
+						custom_tooltip = {
+							text = da_ttip_transfer
+							hidden_tooltip = {
+								ROOT = {
+									de_jure_liege = PREV
+								}
+							}
+						}
+					}
+					wealth = -200
+					piety = -400
+					prestige = -400
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 0
+		}
+	}
+## 	/Transfer Kingdom to Recipient Empire
+
+
+
+
+
+##--################################################################
+##	Create Duchy From County
+##--################################################################
+	da_create_duchy = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title 
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			higher_real_tier_than = BARON
+			has_dlc = "Charlemagne"
+			is_playable = yes
+		}
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = COUNT
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+			#holder_scope = {character = FROM}
+		}
+		
+		#Allow Block
+		allow = {
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+				prestige = 200
+				piety = 200
+				wealth = 200
+				custom_tooltip = {
+					text = da_ttip_relighead_approve50
+					hidden_tooltip = {
+						OR = {
+							rightful_religious_head_scope = {
+								opinion = { who = FROM value = 50 }
+							}
+							NOT = {
+								rightful_religious_head_scope = {
+									always = yes
+								}
+							}
+						}
+					}
+				}		
+				custom_tooltip = {
+					text = da_ttip_duke_realm_size
+					hidden_tooltip = {
+						OR = {
+							realm_size = 8
+							any_demesne_title = {
+								count = 3
+								real_tier = COUNT
+							}
+							any_demesne_title = {
+								count = 1
+								higher_real_tier_than = COUNT
+							}
+						}
+					}
+				}
+			}
+			ROOT = {
+				custom_tooltip = {
+					text = da_ttip_previously_created_from
+					hidden_tooltip = {
+						NOT = {has_title_flag = customtitle_created}
+					}
+				}
+			}
+		}
+		
+		#Effect Block
+		effect = {
+			FROM = {
+				#New Title
+				ROOT = {
+					create_title = {
+						tier = DUKE
+						landless = no
+						temporary = no
+						custom_created = yes
+						culture = FROM
+						holder = FROM
+						base_title = THIS
+						copy_title_laws = yes
+					}
+					hidden_tooltip = {
+						new_title = {	
+							set_variable = {
+								which = "customtitle_findme"
+								value = 1
+							}
+						}
+						FROM = {
+							primary_title = {
+								ROOT = {
+									kingdom = {
+										FROM = {
+											any_demesne_title = {
+												limit = {
+													real_tier = DUKE
+													check_variable = {which = "customtitle_findme" value = 1} 
+												}
+												de_jure_liege = PREVPREV
+												
+												if = {
+													limit = {
+														FROM = {
+															any_demesne_title = {
+																count = 2
+																higher_real_tier_than = COUNT
+															}	
+														}
+													}
+													copy_title_laws = PREVPREVPREVPREV
+													if = {
+														limit = {
+															ROOT = {
+																location = {
+																	duchy = {
+																		OR = {
+																			has_holder = no
+																			holder_scope = {
+																				OR = { 
+																					character = FROM
+																					top_liege = {
+																						character = FROM
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+														ROOT = 
+														{
+															 de_jure_liege = PREV
+														}
+													}
+												}
+												if = {
+													limit = {
+														NOT = {
+															FROM = {
+																any_demesne_title = {
+																	count = 2
+																	higher_real_tier_than = COUNT
+																}
+															}	
+														}
+													}
+													holder_scope = {
+														any_title_under = {
+															limit = {
+																real_tier = COUNT
+																location = {
+																	duchy = {
+																		has_holder = no
+																	}
+																}	
+															}
+															de_jure_liege = PREVPREV
+														}
+														any_title_under = {
+															limit = {
+																real_tier = COUNT
+																location = {
+																	duchy = {
+																			has_holder = no
+																	}
+																	NOT = { de_jure_liege_or_above = PREVPREVPREV }
+																	FROM = {
+																		completely_controls = PREV
+																	}
+																}
+															}
+															location = {
+																de_jure_liege = PREVPREVPREV
+															}
+														}
+													}
+												}
+												set_variable = {
+													which = "customtitle_findme"
+													value = 0
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						set_title_flag = customtitle_created
+					}
+				}
+				#Costs
+				wealth = -200
+				piety = -200
+				prestige = 200
+				custom_tooltip = { text = da_ttip_new_duchy }
+				#chronicle = {
+				#	entry = CHRONICLE_FOUNDED_NEW_KINGDOM_OR_EMPIRE
+				#	portrait = [From.GetID]
+				#}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 1
+			modifier = {
+				factor = 0.25
+			}
+			modifier = {
+				factor = 0.01
+				FROM = { trait = content }
+			}
+			modifier = {
+				factor = 0.1
+				FROM = {trait = humble}
+			}		
+			modifier = {
+				factor = 2
+				FROM = {trait = ambitious}
+			}		
+			modifier = {
+				factor = 1.5
+				FROM = {trait = proud}
+			}		
+			modifier = {
+				factor = 0.1
+				NOT = {
+					FROM = {prestige = 500}
+				}
+			}
+			modifier = {
+				factor = 1.5
+				FROM = {prestige = 1000}
+			}
+			modifier = {
+				factor = 2
+				FROM = {prestige = 2000}
+			}
+			modifier = {
+				factor = 6.5
+				FROM = {prestige = 4000}
+			}
+		}
+	}
+##	/Create Duchy
+
+
+
+##--################################################################
+##	Create Kingdom From Duchy
+##--################################################################
+	da_create_kingdom = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title 
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			higher_real_tier_than = COUNT
+			has_dlc = "Charlemagne"
+			is_playable = yes
+		}
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = DUKE
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+			#holder_scope = {character = FROM}
+		}
+		
+		#Allow Block
+		allow = {
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+				prestige = 400
+				piety = 200
+				wealth = 400
+				custom_tooltip = {
+					text = da_ttip_relighead_approve75
+					hidden_tooltip = {
+						OR = {
+							rightful_religious_head_scope = {
+								opinion = { who = FROM value = 75 }
+							}
+							NOT = {
+								rightful_religious_head_scope = {
+									always = yes
+								}
+							}
+						}
+					}
+				}		
+				custom_tooltip = {
+					text = da_ttip_king_realm_size
+					hidden_tooltip = {
+						OR = {
+							realm_size = 35
+							any_demesne_title = {
+								count = 3
+								real_tier = DUKE
+							}
+							any_demesne_title = {
+								count = 1
+								higher_real_tier_than = DUKE
+							}
+						}
+					}
+				}
+			}
+			ROOT = {
+				custom_tooltip = {
+					text = da_ttip_previously_created_from
+					hidden_tooltip = {
+						NOT = { has_title_flag = customtitle_created}
+					}
+				}
+			}
+		}
+		#Effect Block
+		effect = {
+			FROM = {
+				#New Title
+				ROOT = {
+					create_title = {
+						tier = KING
+						landless = no
+						temporary = no
+						custom_created = yes
+						culture = FROM
+						holder = FROM
+						base_title = THIS
+						copy_title_laws = yes
+					}
+					hidden_tooltip = {
+						new_title = {	
+							set_variable = {
+								which = "customtitle_findme"
+								value = 1
+							}
+						}
+						FROM = {
+							primary_title = {
+								ROOT = {
+									empire = {
+										FROM = {
+											any_demesne_title = {
+												limit = {
+													real_tier = KING
+													check_variable = {which = "customtitle_findme" value = 1} 
+												}
+												de_jure_liege = PREVPREV
+												if = {
+													limit = {
+														FROM = {
+															any_demesne_title = {
+																count = 2
+																higher_real_tier_than = DUKE
+															}	
+														}
+													}
+													copy_title_laws = PREVPREVPREVPREV
+													if = {
+														limit = {
+															ROOT = {
+																kingdom = {
+																	OR = {
+																		has_holder = no
+																		holder_scope = {
+																			character = FROM
+																		}
+																	}
+																}
+															}
+														}
+														ROOT = {
+															de_jure_liege = PREV
+														}
+													}
+												}
+												if = {
+													limit = {
+														NOT = {
+															FROM = {
+																any_demesne_title = {
+																	count = 2
+																	higher_real_tier_than = DUKE
+																}
+															}	
+														}
+													}
+													holder_scope = {
+														any_title_under = {
+															limit = {
+																real_tier = DUKE
+																kingdom = {
+																	has_holder = no
+																}
+															}
+															de_jure_liege = PREVPREV
+														}
+														any_title_under = {
+															limit = {
+																real_tier = COUNT
+																location = {
+																	duchy = {
+																		kingdom = {
+																			has_holder = no
+																		}
+																		NOT = { de_jure_liege_or_above = PREVPREVPREVPREV }
+																		FROM = {
+																			completely_controls = PREV
+																		}
+																	}
+																}
+															}
+															location = {
+																duchy = {
+																	de_jure_liege = PREVPREVPREVPREV
+																}
+															}
+														}
+													}
+												}
+												set_variable = {
+													which = "customtitle_findme"
+													value = 0
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						set_title_flag = customtitle_created
+					}
+				}
+				#Costs
+				if = {
+					limit = {
+						piety = 1000
+					}
+					wealth = -200
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 800
+							NOT = { piety = 1000}
+						}
+					}
+					wealth = -250
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 600
+							NOT = { piety = 800}
+						}
+					}
+					wealth = -300
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 400
+							NOT = { piety = 600}
+						}
+					}
+					wealth = -350
+				}
+				if = {
+					limit = {
+						NOT = { piety = 400}
+					}
+					wealth = -400
+				}
+				piety = -200
+				prestige = 400
+				custom_tooltip = { text = form_new_kingdom_tooltip }
+				chronicle = {
+					entry = CHRONICLE_FOUNDED_NEW_KINGDOM_OR_EMPIRE
+					portrait = [From.GetID]
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 1
+			modifier = {
+				factor = 0.25
+			}
+			modifier = {
+				factor = 0.01
+				FROM = { trait = content }
+			}
+			modifier = {
+				factor = 0.1
+				FROM = {trait = humble}
+			}		
+			modifier = {
+				factor = 2
+				FROM = {trait = ambitious}
+			}		
+			modifier = {
+				factor = 1.5
+				FROM = {trait = proud}
+			}		
+			modifier = {
+				factor = 0.1
+				NOT = {
+					FROM = {prestige = 1000}
+				}
+			}
+			modifier = {
+				factor = 1.5
+				FROM = {prestige = 2000}
+			}
+			modifier = {
+				factor = 2
+				FROM = {prestige = 4000}
+			}
+			modifier = {
+				factor = 6.5
+				FROM = {prestige = 8000}
+			}
+		}
+	}
+##	/Create Kingdom
+
+
+##--################################################################
+##	Create Empire From Kingdom
+##--################################################################
+	da_create_empire = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title 
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			higher_real_tier_than = DUKE
+			has_dlc = "Charlemagne"
+			is_playable = yes
+			is_nomadic = no
+		}
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = KING
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+			#holder_scope = {character = FROM}
+		}
+		#Allow Block
+		allow = {
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+				prestige = 800
+				piety = 400
+				wealth = 800
+				custom_tooltip = {
+					text = da_ttip_relighead_approve100
+					hidden_tooltip = {
+						OR = {
+							rightful_religious_head_scope = {
+								opinion = { who = FROM value = 100 }
+							}
+							NOT = {
+								rightful_religious_head_scope = {
+									always = yes
+								}
+							}
+						}
+					}
+				}		
+				custom_tooltip = {
+					text = da_ttip_emperor_realm_size
+					hidden_tooltip = {
+						OR = {
+							realm_size = 180
+							any_demesne_title = {
+								count = 3
+								real_tier = KING
+							}
+							any_demesne_title = {
+								count = 1
+								higher_real_tier_than = KING
+							}
+						}
+					}
+				}
+			}
+			ROOT = {
+				custom_tooltip = {
+					text = da_ttip_previously_created_from
+					hidden_tooltip = {
+						NOT = { has_title_flag = customtitle_created}
+					}
+				}
+			}
+		}
+		#Effect Block
+		effect = {
+			FROM = {
+				#New Title
+				ROOT = {
+					create_title = {
+						tier = EMPEROR
+						landless = no
+						temporary = no
+						custom_created = yes
+						culture = FROM
+						holder = FROM
+						base_title = THIS
+						copy_title_laws = yes
+					}
+					hidden_tooltip = {
+						new_title = {	
+							set_variable = {
+								which = "customtitle_findme"
+								value = 1
+							}
+						}
+						FROM = {
+							primary_title = {
+								holder_scope = {
+									any_demesne_title = {
+										limit = {
+											real_tier = EMPEROR
+											check_variable = {which = "customtitle_findme" value = 1} 
+										}
+										if = {
+											limit = {
+												FROM = {
+													any_demesne_title = {
+														count = 2
+														higher_real_tier_than = KING #WHY!?!?!?!?!?!
+													}	
+												}
+											}
+											copy_title_laws = PREVPREV
+											if = {
+												limit = {
+													ROOT = {
+														empire = {
+															OR = {
+																has_holder = no
+																holder_scope = {
+																	character = FROM
+																}
+															}
+														}
+													}
+												}
+												ROOT = {
+													de_jure_liege = PREV
+												}
+											}
+										}
+										if = {
+											limit = {
+												NOT = {
+													FROM = {
+														any_demesne_title = {
+															count = 2
+															higher_real_tier_than = KING
+														}
+													}	
+												}
+											}
+											holder_scope = {
+												any_title_under = {
+													limit = {
+														real_tier = KING
+														empire = {
+															has_holder = no
+														}
+													}
+													de_jure_liege = PREVPREV
+												}
+												any_title_under = {
+													limit = {
+														real_tier = DUKE
+														location = {
+															kingdom = {
+																empire = {
+																	has_holder = no
+																}
+																NOT = { de_jure_liege_or_above = PREVPREVPREVPREV }
+																FROM = {
+																	completely_controls = PREV
+																}
+															}
+														}
+													}
+													location = {
+														kingdom = {
+															de_jure_liege = PREVPREVPREVPREV
+														}
+													}
+												}
+											}
+										}
+										set_variable = {
+											which = "customtitle_findme"
+											value = 0
+										}
+									}
+								}
+							}
+						}
+						set_title_flag = customtitle_created
+					}
+				}
+				#Costs
+				if = {
+					limit = {
+						piety = 1200
+					}
+					wealth = -400
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 1000
+							NOT = { piety = 1200}
+						}
+					}
+					wealth = -500
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 800
+							NOT = { piety = 1000}
+						}
+					}
+					wealth = -600
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 600
+							NOT = { piety = 800}
+						}
+					}
+					wealth = -700
+				}
+				if = {
+					limit = {
+						NOT = { piety = 600}
+					}
+					wealth = -800
+				}
+				piety = -400
+				prestige = 800
+				custom_tooltip = { text = form_new_empire_tooltip }
+				chronicle = {
+					entry = CHRONICLE_FOUNDED_NEW_KINGDOM_OR_EMPIRE
+					portrait = [From.GetID]
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 1
+			modifier = {
+				factor = 0.1
+			}
+			modifier = {
+				factor = 0.01
+				FROM = { trait = content }
+			}
+			modifier = {
+				factor = 0.1
+				FROM = {trait = humble}
+			}		
+			modifier = {
+				factor = 2
+				FROM = {trait = ambitious}
+			}		
+			modifier = {
+				factor = 1.5
+				FROM = {trait = proud}
+			}		
+			modifier = {
+				factor = 0.1
+				NOT = {
+					FROM = {prestige = 2000}
+				}
+			}
+			modifier = {
+				factor = 1.5
+				FROM = {prestige = 4000}
+			}
+			modifier = {
+				factor = 2
+				FROM = {prestige = 8000}
+			}
+			modifier = {
+				factor = 6.5
+				FROM = {prestige = 16000}
+			}
+		}
+	}
+## /Create Empire
+
+
+
+
+##--################################################################
+##	Create Titular Duchy From County
+##--################################################################
+	da_create_titular_duchy = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title 
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			higher_real_tier_than = BARON
+			has_dlc = "Charlemagne"
+			is_playable = yes
+			ai = no
+		}
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = COUNT
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+			#holder_scope = {character = FROM}
+		}
+		
+		#Allow Block
+		allow = {
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+				prestige = 200
+				piety = 200
+				wealth = 200
+				custom_tooltip = {
+					text = da_ttip_relighead_approve50
+					hidden_tooltip = {
+						OR = {
+							rightful_religious_head_scope = {
+								opinion = { who = FROM value = 50 }
+							}
+							NOT = {
+								rightful_religious_head_scope = {
+									always = yes
+								}
+							}
+						}
+					}
+				}		
+				custom_tooltip = {
+					text = da_ttip_duke_realm_size
+					hidden_tooltip = {
+						OR = {
+							realm_size = 8
+							any_demesne_title = {
+								count = 3
+								real_tier = COUNT
+							}
+							any_demesne_title = {
+								count = 1
+								higher_real_tier_than = COUNT
+							}
+						}
+					}
+				}
+			}
+			ROOT = {
+				custom_tooltip = {
+					text = da_ttip_previously_created_from
+					hidden_tooltip = {
+						NOT = {has_title_flag = customtitle_created}
+					}
+				}
+			}
+		}
+		
+		#Effect Block
+		effect = {
+			FROM = {
+				#New Title
+				ROOT = {
+					create_title = {
+						tier = DUKE
+						landless = no
+						temporary = no
+						custom_created = yes
+						culture = FROM
+						holder = FROM
+						base_title = THIS
+						copy_title_laws = yes
+					}
+					hidden_tooltip = {
+						new_title = {	
+							set_variable = {
+								which = "customtitle_findme"
+								value = 1
+							}
+						}
+						FROM = {
+							primary_title = {
+								ROOT = {
+									kingdom = {
+										FROM = {
+											any_demesne_title = {
+												limit = {
+													real_tier = DUKE
+													check_variable = {which = "customtitle_findme" value = 1} 
+												}
+												de_jure_liege = PREVPREV
+												
+												if = {
+													limit = {
+														FROM = {
+															any_demesne_title = {
+																count = 2
+																higher_real_tier_than = COUNT
+															}	
+														}
+													}
+													copy_title_laws = PREVPREVPREVPREV
+												}
+												set_variable = {
+													which = "customtitle_findme"
+													value = 0
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						set_title_flag = customtitle_created
+					}
+				}
+				#Costs
+				wealth = -200
+				piety = -200
+				prestige = 200
+				custom_tooltip = { text = da_ttip_new_duchy }
+				#chronicle = {
+				#	entry = CHRONICLE_FOUNDED_NEW_KINGDOM_OR_EMPIRE
+				#	portrait = [From.GetID]
+				#}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+		}
+	}
+##	/Create Titular Duchy
+
+
+
+##--################################################################
+##	Create Titular Kingdom From Duchy
+##--################################################################
+	da_create_titular_kingdom = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title 
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			higher_real_tier_than = COUNT
+			has_dlc = "Charlemagne"
+			is_playable = yes
+			ai = no
+		}
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = DUKE
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+			#holder_scope = {character = FROM}
+		}
+		
+		#Allow Block
+		allow = {
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+				prestige = 400
+				piety = 200
+				wealth = 400
+				custom_tooltip = {
+					text = da_ttip_relighead_approve75
+					hidden_tooltip = {
+						OR = {
+							rightful_religious_head_scope = {
+								opinion = { who = FROM value = 75 }
+							}
+							NOT = {
+								rightful_religious_head_scope = {
+									always = yes
+								}
+							}
+						}
+					}
+				}		
+				custom_tooltip = {
+					text = da_ttip_king_realm_size
+					hidden_tooltip = {
+						OR = {
+							realm_size = 35
+							any_demesne_title = {
+								count = 3
+								real_tier = DUKE
+							}
+							any_demesne_title = {
+								count = 1
+								higher_real_tier_than = DUKE
+							}
+						}
+					}
+				}
+			}
+			ROOT = {
+				custom_tooltip = {
+					text = da_ttip_previously_created_from
+					hidden_tooltip = {
+						NOT = { has_title_flag = customtitle_created}
+					}
+				}
+			}
+		}
+		#Effect Block
+		effect = {
+			FROM = {
+				#New Title
+				ROOT = {
+					create_title = {
+						tier = KING
+						landless = no
+						temporary = no
+						custom_created = yes
+						culture = FROM
+						holder = FROM
+						base_title = THIS
+						copy_title_laws = yes
+					}
+					hidden_tooltip = {
+						new_title = {	
+							set_variable = {
+								which = "customtitle_findme"
+								value = 1
+							}
+						}
+						FROM = {
+							primary_title = {
+								ROOT = {
+									empire = {
+										FROM = {
+											any_demesne_title = {
+												limit = {
+													real_tier = KING
+													check_variable = {which = "customtitle_findme" value = 1} 
+												}
+												de_jure_liege = PREVPREV
+												if = {
+													limit = {
+														FROM = {
+															any_demesne_title = {
+																count = 2
+																higher_real_tier_than = DUKE
+															}	
+														}
+													}
+													copy_title_laws = PREVPREVPREVPREV
+												}
+												set_variable = {
+													which = "customtitle_findme"
+													value = 0
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						set_title_flag = customtitle_created
+					}
+				}
+				#Costs
+				if = {
+					limit = {
+						piety = 1000
+					}
+					wealth = -200
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 800
+							NOT = { piety = 1000}
+						}
+					}
+					wealth = -250
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 600
+							NOT = { piety = 800}
+						}
+					}
+					wealth = -300
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 400
+							NOT = { piety = 600}
+						}
+					}
+					wealth = -350
+				}
+				if = {
+					limit = {
+						NOT = { piety = 400}
+					}
+					wealth = -400
+				}
+				piety = -200
+				prestige = 400
+				custom_tooltip = { text = form_new_kingdom_tooltip }
+				chronicle = {
+					entry = CHRONICLE_FOUNDED_NEW_KINGDOM_OR_EMPIRE
+					portrait = [From.GetID]
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 1
+			modifier = {
+				factor = 0.25
+			}
+			modifier = {
+				factor = 0.01
+				FROM = { trait = content }
+			}
+			modifier = {
+				factor = 0.1
+				FROM = {trait = humble}
+			}		
+			modifier = {
+				factor = 2
+				FROM = {trait = ambitious}
+			}		
+			modifier = {
+				factor = 1.5
+				FROM = {trait = proud}
+			}		
+			modifier = {
+				factor = 0.1
+				NOT = {
+					FROM = {prestige = 1000}
+				}
+			}
+			modifier = {
+				factor = 1.5
+				FROM = {prestige = 2000}
+			}
+			modifier = {
+				factor = 2
+				FROM = {prestige = 4000}
+			}
+			modifier = {
+				factor = 6.5
+				FROM = {prestige = 8000}
+			}
+		}
+	}
+##	/Create Titular Kingdom
+
+
+##--################################################################
+##	Create Empire From Kingdom
+##--################################################################
+	da_create_titular_empire = {
+		#Filter Block - Ai Filter Block
+		filter = realm_owned
+		ai_target_filter = primary_title 
+		
+		#From potential Block - "The Decider"
+		from_potential = {
+			higher_real_tier_than = DUKE
+			has_dlc = "Charlemagne"
+			is_playable = yes
+			is_nomadic = no
+			ai = no
+		}
+		#Potential Block - Title in Question
+		potential = {
+			real_tier = KING
+			holder_scope = {
+				OR = { 
+					character = FROM
+					top_liege = {
+						character = FROM
+					}
+				}
+			}
+			#holder_scope = {character = FROM}
+		}
+		#Allow Block
+		allow = {
+			FROM = {
+				custom_tooltip = {
+					text = da_ttip_adult_free_capable_independent
+					hidden_tooltip = {
+						is_adult = yes
+						prisoner = no
+						NOT = { trait = incapable }
+						independent = yes
+					}
+				}
+				prestige = 800
+				piety = 400
+				wealth = 800
+				custom_tooltip = {
+					text = da_ttip_relighead_approve100
+					hidden_tooltip = {
+						OR = {
+							rightful_religious_head_scope = {
+								opinion = { who = FROM value = 100 }
+							}
+							NOT = {
+								rightful_religious_head_scope = {
+									always = yes
+								}
+							}
+						}
+					}
+				}		
+				custom_tooltip = {
+					text = da_ttip_emperor_realm_size
+					hidden_tooltip = {
+						OR = {
+							realm_size = 180
+							any_demesne_title = {
+								count = 3
+								real_tier = KING
+							}
+							any_demesne_title = {
+								count = 1
+								higher_real_tier_than = KING
+							}
+						}
+					}
+				}
+			}
+			ROOT = {
+				custom_tooltip = {
+					text = da_ttip_previously_created_from
+					hidden_tooltip = {
+						NOT = { has_title_flag = customtitle_created}
+					}
+				}
+			}
+		}
+		#Effect Block
+		effect = {
+			FROM = {
+				#New Title
+				ROOT = {
+					create_title = {
+						tier = EMPEROR
+						landless = no
+						temporary = no
+						custom_created = yes
+						culture = FROM
+						holder = FROM
+						base_title = THIS
+						copy_title_laws = yes
+					}
+					hidden_tooltip = {
+						new_title = {	
+							set_variable = {
+								which = "customtitle_findme"
+								value = 1
+							}
+						}
+						FROM = {
+							primary_title = {
+								holder_scope = {
+									any_demesne_title = {
+										limit = {
+											real_tier = EMPEROR
+											check_variable = {which = "customtitle_findme" value = 1} 
+										}
+										if = {
+											limit = {
+												FROM = {
+													any_demesne_title = {
+														count = 2
+														higher_real_tier_than = KING #WHY!?!?!?!?!?!
+													}	
+												}
+											}
+											copy_title_laws = PREVPREV
+										}
+										set_variable = {
+											which = "customtitle_findme"
+											value = 0
+										}
+									}
+								}
+							}
+						}
+						set_title_flag = customtitle_created
+					}
+				}
+				#Costs
+				if = {
+					limit = {
+						piety = 1200
+					}
+					wealth = -400
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 1000
+							NOT = { piety = 1200}
+						}
+					}
+					wealth = -500
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 800
+							NOT = { piety = 1000}
+						}
+					}
+					wealth = -600
+				}
+				if = {
+					limit = {
+						AND = {
+							piety = 600
+							NOT = { piety = 800}
+						}
+					}
+					wealth = -700
+				}
+				if = {
+					limit = {
+						NOT = { piety = 600}
+					}
+					wealth = -800
+				}
+				piety = -400
+				prestige = 800
+				custom_tooltip = { text = form_new_empire_tooltip }
+				chronicle = {
+					entry = CHRONICLE_FOUNDED_NEW_KINGDOM_OR_EMPIRE
+					portrait = [From.GetID]
+				}
+			}
+		}
+		#Revoke Allowed Block?
+		revoke_allowed = {
+			always = no
+		}
+		#Ai Will Do Block
+		ai_will_do = {
+			factor = 1
+			modifier = {
+				factor = 0.1
+			}
+			modifier = {
+				factor = 0.01
+				FROM = { trait = content }
+			}
+			modifier = {
+				factor = 0.1
+				FROM = {trait = humble}
+			}		
+			modifier = {
+				factor = 2
+				FROM = {trait = ambitious}
+			}		
+			modifier = {
+				factor = 1.5
+				FROM = {trait = proud}
+			}		
+			modifier = {
+				factor = 0.1
+				NOT = {
+					FROM = {prestige = 2000}
+				}
+			}
+			modifier = {
+				factor = 1.5
+				FROM = {prestige = 4000}
+			}
+			modifier = {
+				factor = 2
+				FROM = {prestige = 8000}
+			}
+			modifier = {
+				factor = 6.5
+				FROM = {prestige = 16000}
+			}
+		}
+	}
+## /Create Titular Empire
+}
+
+# decisions = {
+	# form_new_kingdom = {
+		# potential = {
+			# always = no #NEVA!
+		# }
+		# allow = {
+			# always = no #NEVA!
+		# }
+		# effect = {
+		# }
+		# ai_will_do = {
+			# factor = 0
+		# }
+	# }
+	# form_new_empire = {
+		# potential = {
+			# always = no #NEVA!
+		# }
+		# allow = {
+			# always = no #NEVA!
+		# }
+		# effect = {
+		# }
+		# ai_will_do = {
+			# factor = 0
+		# }
+	# }
+# }
+##--################################################################
+##	/Dejure Adjudication Mod - Have a nice day!
+##--################################################################
