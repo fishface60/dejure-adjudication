@@ -399,14 +399,8 @@ title_decisions = {
 						has_character_flag = da_has_title_recipient_id
 						any_realm_title = {
 							AND = {
-								da_has_title_id = yes
 								real_tier = DUKE
-								is_variable_equal = { which = da_title_id which = FROM }
-								NOT = {
-									ROOT = {
-										de_jure_liege = PREV
-									}
-								}
+								ROOT = { FROM = { da_is_recipient_not_dejure = yes } }
 							}
 						}
 					#}
@@ -578,14 +572,8 @@ title_decisions = {
 						has_character_flag = da_has_title_recipient_id
 						any_realm_title = {
 							AND = {
-								da_has_title_id = yes
 								real_tier = KING
-								is_variable_equal = { which = da_title_id which = FROM }
-								NOT = {
-									ROOT = {
-										de_jure_liege = PREV
-									}
-								}
+								ROOT = { FROM = { da_is_recipient_not_dejure = yes } }
 							}
 						}
 					}
@@ -742,14 +730,8 @@ title_decisions = {
 						has_character_flag = da_has_title_recipient_id
 						any_realm_title = {
 							AND = {
-								da_has_title_id = yes
 								real_tier = EMPEROR
-								is_variable_equal = { which = da_title_id which = FROM }
-								NOT = {
-									ROOT = {
-										de_jure_liege = PREV
-									}
-								}
+								ROOT = { FROM = { da_is_recipient_not_dejure = yes } }
 							}
 						}
 					#}

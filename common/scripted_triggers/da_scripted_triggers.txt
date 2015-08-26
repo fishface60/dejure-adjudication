@@ -36,3 +36,18 @@ da_title_potential_transfer = {
 		}
 	}
 }
+
+# Call as <TITLE:recipient> = { <TITLE:vassal> = { <CHARACTER:liege> = { da_is_recipient_not_dejure = yes } } }
+da_is_recipient_not_dejure = {
+	# <TITLE:recipient>, <TITLE:vassal>, <CHARACTER:liege>,  <TITLE:recipient>
+	PREVPREV = {
+		AND = {
+			da_has_title_id = yes
+			is_variable_equal = { which = da_title_id which = PREV }
+			# <TITLE:recipient>, <TITLE:vassal>, <CHARACTER:liege>,  <TITLE:recipient>, <TITLE:vassal>
+			PREVPREV = {
+				NOT = { de_jure_liege = PREV }
+			}
+		}
+	}
+}
