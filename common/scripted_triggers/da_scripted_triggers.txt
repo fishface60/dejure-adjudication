@@ -13,40 +13,101 @@ da_has_title_id = {
 	}
 }
 
-# Call as <CHARACTER> = { <TITLE> = { da_title_potential_transfer = yes } }
+# BUG: I hit some hard-limit on the number of nested scopes (at least inside
+# triggers) where nothing inside a THIS/PREV scope would be recognised,
+# yielding an "Unexpected token PREV" error.
+# So rather than passing parameters to triggers as scopes, I have to assume
+# that ROOT is the targetted title, and FROM is the instigator.
+
+# Check whether FROM controls the title.
+# Call as <TITLE> = { da_title_controlled = yes }
+da_title_controlled = {
+	#<TITLE>, <CHARACTER:holder>
+	holder_scope = {
+		OR = {
+			character = FROM
+			#<TITLE>, <CHARACTER:holder>, <CHARACTER:liege>
+			any_liege = {
+				character = FROM
+			}
+		}
+	}
+}
+
+# Check whether FROM can transfer the title
+# Call as <TITLE> = { da_title_potential_transfer = yes }
 da_title_potential_transfer = {
 	AND = {
 		is_title_active = yes
 		OR = {
 			AND = {
 				has_holder = no
-				#<CHARACTER>, <TITLE>, <CHARACTER>
-				PREV = { completely_controls = PREVPREV }
+				#<TITLE>, <CHARACTER:FROM>
+				FROM = { completely_controls = PREV }
 			}
-			#<CHARACTER>, <TITLE>, <CHARACTER:holder>
-			holder_scope = {
+			da_title_controlled = yes
+		}
+	}
+}
+
+# Check whether the title is the recipient title selected by FROM and is not already de-jure part of ROOT
+# Call as <TITLE:recipient> = { da_is_recipient_not_dejure = yes }
+da_is_recipient_not_dejure = {
+	AND = {
+		da_has_title_id = yes
+		is_variable_equal = { which = da_title_id which = FROM }
+		# <TITLE:recipient>, <TITLE:vassal>
+		ROOT = {
+			NOT = { de_jure_liege = PREV }
+		}
+	}
+}
+
+# You legally control a title if
+# all its de-jure liege titles are either
+# owned by you, a vassal of yours, or nobody.
+# Call as <CHARACTER> = { <TITLE> = { da_legally_controls_<TIER> = yes } }
+# (since it has two parameters we can only pass in with the scope stack)
+da_legally_controls_kingdom = {
+	NOT = {
+		#<TITLE:kingdom>, <TITLE:empire>
+		empire = {
+			NOT = {
 				OR = {
-					character = PREVPREV
-					#<CHARACTER>, <TITLE>, <CHARACTER:holder>, <CHARACTER:liege>
-					any_liege = {
-						character = PREVPREVPREV
-					}
+					has_holder = no
+					da_title_controlled = yes
 				}
 			}
 		}
 	}
 }
-
-# Call as <TITLE:recipient> = { <TITLE:vassal> = { <CHARACTER:liege> = { da_is_recipient_not_dejure = yes } } }
-da_is_recipient_not_dejure = {
-	# <TITLE:recipient>, <TITLE:vassal>, <CHARACTER:liege>,  <TITLE:recipient>
-	PREVPREV = {
-		AND = {
-			da_has_title_id = yes
-			is_variable_equal = { which = da_title_id which = PREV }
-			# <TITLE:recipient>, <TITLE:vassal>, <CHARACTER:liege>,  <TITLE:recipient>, <TITLE:vassal>
-			PREVPREV = {
-				NOT = { de_jure_liege = PREV }
+da_legally_controls_duchy = {
+	NOT = {
+		#<TITLE:duchy>, <TITLE:kingdom>
+		kingdom = {
+			NOT = {
+				AND = {
+					OR = {
+						has_holder = no
+						da_title_controlled = yes
+					}
+					da_legally_controls_kingdom = yes
+				}
+			}
+		}
+	}
+}
+da_legally_controls_county = {
+	#<TITLE:county>, <PROVINCE:location>
+	location = {
+		#<TITLE:county>, <PROVINCE:location>, <TITLE:duchy>
+		duchy = {
+			AND = {
+				OR = {
+					has_holder = no
+					da_title_controlled = yes
+				}
+				da_legally_controls_duchy = yes
 			}
 		}
 	}

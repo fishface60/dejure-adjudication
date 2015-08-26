@@ -299,14 +299,7 @@ title_decisions = {
 			# trigger instead causes CK2 to crash.
 			has_holder = yes
 
-			holder_scope = {
-				OR = {
-					character = FROM
-					any_liege = {
-						character = FROM
-					}
-				}
-			}
+			da_title_controlled = yes
 		}
 		
 		#Allow Block
@@ -387,7 +380,7 @@ title_decisions = {
 		#Potential Block - Title in Question
 		potential = {
 			real_tier = COUNT
-			FROM = { ROOT = { da_title_potential_transfer = yes } }
+			da_title_potential_transfer = yes
 		}
 		
 		#Allow Block
@@ -400,7 +393,7 @@ title_decisions = {
 						any_realm_title = {
 							AND = {
 								real_tier = DUKE
-								ROOT = { FROM = { da_is_recipient_not_dejure = yes } }
+								da_is_recipient_not_dejure = yes
 							}
 						}
 					#}
@@ -413,72 +406,8 @@ title_decisions = {
 				wealth = 50
 			}
 			#hidden_tooltip = {
-				ROOT = {
-					AND = {
-						#custom_tooltip = {
-							#text = da_ttip_control_the_current_dejure_duchy
-							#hidden_tooltip = {
-								location = {
-									duchy = {
-										OR = {
-											has_holder = no
-											holder_scope = {
-												OR = { 
-													character = FROM
-													any_liege = {
-														character = FROM
-													}
-												}
-											}
-										}
-										NOT = { kingdom = { NOT = {
-											OR = {
-												has_holder = no
-												holder_scope = {
-													OR = { 
-														character = FROM
-														any_liege = {
-															character = FROM
-														}
-													}
-												}
-											}
-											NOT = { empire = { NOT = {
-												OR = {
-													has_holder = no
-													holder_scope = {
-														OR = { 
-															character = FROM
-															any_liege = {
-																character = FROM
-															}
-														}
-													}
-												}
-											} } }
-										} } }
-									}
-								}
-							#}
-						#}
-						custom_tooltip = {
-							text = da_ttip_control_the_current_target
-							hidden_tooltip = {
-								OR = {
-									has_holder = no
-									holder_scope = {
-										OR = {
-											character = FROM
-											any_liege = {
-												character = FROM
-											}
-										}
-									}
-								}
-							}	
-						}
-					}
-				}
+				da_title_controlled = yes
+				da_legally_controls_county = yes
 			#}
 		}
 		#Effect Block
@@ -560,7 +489,7 @@ title_decisions = {
 		#Potential Block - Title in Question
 		potential = {
 			real_tier = DUKE
-			FROM = { ROOT = { da_title_potential_transfer = yes } }
+			da_title_potential_transfer = yes
 		}
 		
 		#Allow Block
@@ -573,7 +502,7 @@ title_decisions = {
 						any_realm_title = {
 							AND = {
 								real_tier = KING
-								ROOT = { FROM = { da_is_recipient_not_dejure = yes } }
+								da_is_recipient_not_dejure = yes
 							}
 						}
 					}
@@ -586,57 +515,8 @@ title_decisions = {
 				wealth = 100
 			}
 			#hidden_tooltip = {
-				ROOT = {
-					AND = {
-						#custom_tooltip = {
-							#text = da_ttip_control_the_current_dejure_kingdom
-							#hidden_tooltip = {
-								NOT = { kingdom = { NOT = {
-									OR = {
-										has_holder = no
-										holder_scope = {
-											OR = { 
-												character = FROM
-												any_liege = {
-													character = FROM
-												}
-											}
-										}
-									}
-									NOT = { empire = { NOT = {
-										OR = {
-											has_holder = no
-											holder_scope = {
-												OR = { 
-													character = FROM
-													any_liege = {
-														character = FROM
-													}
-												}
-											}
-										}
-									} } }
-								} } }
-							#}
-						#}
-						custom_tooltip = {
-							text = da_ttip_control_the_current_target
-							hidden_tooltip = {
-								OR = {
-									has_holder = no
-									holder_scope = {
-										OR = { 
-											character = FROM
-											any_liege = {
-												character = FROM
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+				da_title_controlled = yes
+				da_legally_controls_duchy = yes
 			#}
 		}
 		#Effect Block
@@ -718,7 +598,7 @@ title_decisions = {
 		#Potential Block - Title in Question
 		potential = {
 			real_tier = KING
-			FROM = { ROOT = { da_title_potential_transfer = yes } }
+			da_title_potential_transfer = yes
 		}
 		
 		#Allow Block
@@ -731,7 +611,7 @@ title_decisions = {
 						any_realm_title = {
 							AND = {
 								real_tier = EMPEROR
-								ROOT = { FROM = { da_is_recipient_not_dejure = yes } }
+								da_is_recipient_not_dejure = yes
 							}
 						}
 					#}
@@ -744,44 +624,8 @@ title_decisions = {
 				wealth = 200
 			}
 			#hidden_tooltip = {
-				ROOT = {
-					AND = {
-						custom_tooltip = {
-							text = da_ttip_control_the_current_dejure_empire
-							hidden_tooltip = {
-								NOT = { empire = { NOT = {
-									OR = {
-										has_holder = no
-										holder_scope = {
-											OR = { 
-												character = FROM
-												any_liege = {
-													character = FROM
-												}
-											}
-										}
-									}
-								} } }
-							}
-						}
-						custom_tooltip = {
-							text = da_ttip_control_the_current_target
-							hidden_tooltip = {
-								OR = {
-									has_holder = no
-									holder_scope = {
-										OR = { 
-											character = FROM
-											any_liege = {
-												character = FROM
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+				da_title_controlled = yes
+				da_legally_controls_kingdom = yes
 			#}
 		}
 		#Effect Block
