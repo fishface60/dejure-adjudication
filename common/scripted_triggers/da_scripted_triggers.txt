@@ -27,7 +27,10 @@ da_title_potential_transfer = {
 			holder_scope = {
 				OR = {
 					character = PREVPREV
-					de_facto_liege = PREVPREV
+					#<CHARACTER>, <TITLE>, <CHARACTER:holder>, <CHARACTER:liege>
+					any_liege = {
+						character = PREVPREVPREV
+					}
 				}
 			}
 		}

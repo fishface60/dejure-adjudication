@@ -302,7 +302,9 @@ title_decisions = {
 			holder_scope = {
 				OR = {
 					character = FROM
-					de_facto_liege = FROM
+					any_liege = {
+						character = FROM
+					}
 				}
 			}
 		}
@@ -429,7 +431,9 @@ title_decisions = {
 											holder_scope = {
 												OR = { 
 													character = FROM
-													de_facto_liege = FROM
+													any_liege = {
+														character = FROM
+													}
 												}
 											}
 										}
@@ -439,7 +443,9 @@ title_decisions = {
 												holder_scope = {
 													OR = { 
 														character = FROM
-														de_facto_liege = FROM
+														any_liege = {
+															character = FROM
+														}
 													}
 												}
 											}
@@ -449,7 +455,9 @@ title_decisions = {
 													holder_scope = {
 														OR = { 
 															character = FROM
-															de_facto_liege = FROM
+															any_liege = {
+																character = FROM
+															}
 														}
 													}
 												}
@@ -467,7 +475,9 @@ title_decisions = {
 									holder_scope = {
 										OR = {
 											character = FROM
-											de_facto_liege = FROM
+											any_liege = {
+												character = FROM
+											}
 										}
 									}
 								}
@@ -599,7 +609,9 @@ title_decisions = {
 										holder_scope = {
 											OR = { 
 												character = FROM
-												de_facto_liege = FROM
+												any_liege = {
+													character = FROM
+												}
 											}
 										}
 									}
@@ -609,7 +621,9 @@ title_decisions = {
 											holder_scope = {
 												OR = { 
 													character = FROM
-													de_facto_liege = FROM
+													any_liege = {
+														character = FROM
+													}
 												}
 											}
 										}
@@ -625,7 +639,9 @@ title_decisions = {
 									holder_scope = {
 										OR = { 
 											character = FROM
-											de_facto_liege = FROM
+											any_liege = {
+												character = FROM
+											}
 										}
 									}
 								}
@@ -757,7 +773,9 @@ title_decisions = {
 										holder_scope = {
 											OR = { 
 												character = FROM
-												de_facto_liege = FROM
+												any_liege = {
+													character = FROM
+												}
 											}
 										}
 									}
@@ -772,7 +790,9 @@ title_decisions = {
 									holder_scope = {
 										OR = { 
 											character = FROM
-											de_facto_liege = FROM
+											any_liege = {
+												character = FROM
+											}
 										}
 									}
 								}
@@ -840,7 +860,9 @@ title_decisions = {
 			holder_scope = {
 				OR = { 
 					character = FROM
-					de_facto_liege = FROM
+					any_liege = {
+						character = FROM
+					}
 				}
 			}
 			#holder_scope = {character = FROM}
@@ -957,7 +979,9 @@ title_decisions = {
 																			holder_scope = {
 																				OR = { 
 																					character = FROM
-																					de_facto_liege = FROM
+																					any_liege = {
+																						character = FROM
+																					}
 																				}
 																			}
 																		}
@@ -1113,7 +1137,9 @@ title_decisions = {
 				holder_scope = {
 					OR = { 
 						character = FROM
-						de_facto_liege = FROM
+						any_liege = {
+							character = FROM
+						}
 					}
 				}
 			}
@@ -1419,7 +1445,9 @@ title_decisions = {
 				holder_scope = {
 					OR = { 
 						character = FROM
-						de_facto_liege = FROM
+						any_liege = {
+							character = FROM
+						}
 					}
 				}
 			}
@@ -1716,7 +1744,9 @@ title_decisions = {
 			holder_scope = {
 				OR = { 
 					character = FROM
-					de_facto_liege = FROM
+					any_liege = {
+						character = FROM
+					}
 				}
 			}
 			#holder_scope = {character = FROM}
@@ -1887,7 +1917,9 @@ title_decisions = {
 				holder_scope = {
 					OR = { 
 						character = FROM
-						de_facto_liege = FROM
+						any_liege = {
+							character = FROM
+						}
 					}
 				}
 			}
@@ -2133,7 +2165,9 @@ title_decisions = {
 				holder_scope = {
 					OR = { 
 						character = FROM
-						de_facto_liege = FROM
+						any_liege = {
+							character = FROM
+						}
 					}
 				}
 			}
