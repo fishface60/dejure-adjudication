@@ -12,3 +12,24 @@ da_has_title_id = {
 		}
 	}
 }
+
+# Call as <CHARACTER> = { <TITLE> = { da_title_potential_transfer = yes } }
+da_title_potential_transfer = {
+	AND = {
+		is_title_active = yes
+		OR = {
+			AND = {
+				has_holder = no
+				#<CHARACTER>, <TITLE>, <CHARACTER>
+				PREV = { completely_controls = PREVPREV }
+			}
+			#<CHARACTER>, <TITLE>, <CHARACTER:holder>
+			holder_scope = {
+				OR = {
+					character = PREVPREV
+					de_facto_liege = PREVPREV
+				}
+			}
+		}
+	}
+}

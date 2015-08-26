@@ -361,14 +361,8 @@ title_decisions = {
 		
 		#Potential Block - Title in Question
 		potential = {
-			is_title_active = yes
 			real_tier = COUNT
-			holder_scope = {
-				OR = {
-					character = FROM
-					de_facto_liege = FROM
-				}
-			}
+			FROM = { ROOT = { da_title_potential_transfer = yes } }
 		}
 		
 		#Allow Block
@@ -538,20 +532,8 @@ title_decisions = {
 		
 		#Potential Block - Title in Question
 		potential = {
-			is_title_active = yes
 			real_tier = DUKE
-			OR = {
-				AND = {
-					has_holder = no
-					FROM = { completely_controls = ROOT }
-				}
-				holder_scope = {
-					OR = {
-						character = FROM
-						de_facto_liege = FROM
-					}
-				}
-			}
+			FROM = { ROOT = { da_title_potential_transfer = yes } }
 		}
 		
 		#Allow Block
@@ -708,20 +690,8 @@ title_decisions = {
 		
 		#Potential Block - Title in Question
 		potential = {
-			is_title_active = yes
 			real_tier = KING
-			OR = {
-				AND = {
-					has_holder = no
-					FROM = { completely_controls = ROOT }
-				}
-				holder_scope = {
-					OR = {
-						character = FROM
-						de_facto_liege = FROM
-					}
-				}
-			}
+			FROM = { ROOT = { da_title_potential_transfer = yes } }
 		}
 		
 		#Allow Block
