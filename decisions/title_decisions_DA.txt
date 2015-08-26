@@ -151,6 +151,29 @@
 ##				create titles that you want to designate as the
 ##				recipient title.
 ##
+##			-Allow assignment when a title has no de-jure Liege
+##
+##				All assignments check whether there is a legal
+##				inhibition against it, by if any de-jure liege
+##				title is held by someone else.
+##
+##				Unfortunately there was a bug in this logic, as
+##				empire={} will return false if the Kingdom has
+##				no de-jure Empire, such as custom Kingdoms that
+##				have since been destroyed, or some religious
+##				head titles.
+##
+##				Similarly, you can have duchies without a
+##				de-jure Kingdom when a custom Duchy title is
+##				destroyed, most religious head titles, and a
+##				few special titular titles.
+##
+##				This is fixed by flipping the logic around, so
+##				rather than checking that the de-jure liege is
+##				unheld or is held by you or a vassal, that you
+##				check whether there isn't a liege title held by
+##				someone out of your control.
+##
 ##
 ##	Readme:
 ##			Decisions to replace and augment the "Form New 
@@ -410,7 +433,7 @@ title_decisions = {
 												}
 											}
 										}
-										kingdom = {
+										NOT = { kingdom = { NOT = {
 											OR = {
 												has_holder = no
 												holder_scope = {
@@ -420,7 +443,7 @@ title_decisions = {
 													}
 												}
 											}
-											empire = {
+											NOT = { empire = { NOT = {
 												OR = {
 													has_holder = no
 													holder_scope = {
@@ -430,8 +453,8 @@ title_decisions = {
 														}
 													}
 												}
-											}
-										}
+											} } }
+										} } }
 									}
 								}
 							#}
@@ -570,7 +593,7 @@ title_decisions = {
 						#custom_tooltip = {
 							#text = da_ttip_control_the_current_dejure_kingdom
 							#hidden_tooltip = {
-								kingdom = {
+								NOT = { kingdom = { NOT = {
 									OR = {
 										has_holder = no
 										holder_scope = {
@@ -580,7 +603,7 @@ title_decisions = {
 											}
 										}
 									}
-									empire = {
+									NOT = { empire = { NOT = {
 										OR = {
 											has_holder = no
 											holder_scope = {
@@ -590,8 +613,8 @@ title_decisions = {
 												}
 											}
 										}
-									}
-								}
+									} } }
+								} } }
 							#}
 						#}
 						custom_tooltip = {
@@ -728,7 +751,7 @@ title_decisions = {
 						custom_tooltip = {
 							text = da_ttip_control_the_current_dejure_empire
 							hidden_tooltip = {
-								empire = {
+								NOT = { empire = { NOT = {
 									OR = {
 										has_holder = no
 										holder_scope = {
@@ -738,7 +761,7 @@ title_decisions = {
 											}
 										}
 									}
-								}
+								} } }
 							}
 						}
 						custom_tooltip = {
