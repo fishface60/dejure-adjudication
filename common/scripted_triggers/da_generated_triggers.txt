@@ -1,0 +1,5 @@
+
+
+da_has_transfer_recipient_title_id = {
+	has_title_flag = has_da_transfer_recipient_title_id
+}

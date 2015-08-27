@@ -311,10 +311,10 @@ title_decisions = {
 					# set on title and FROM either doesn't
 					# have a flag, or does and has different ID.
 					OR = {
-						NOT = { da_has_title_id = yes }
+						NOT = { da_has_transfer_recipient_title_id = yes }
 						AND = {
-							da_has_title_id = yes
-							NOT = { is_variable_equal = { which = da_title_id which = FROM } }
+							da_has_transfer_recipient_title_id = yes
+							NOT = { is_variable_equal = { which = da_transfer_recipient_title_id which = FROM } }
 						}
 					}
 				}
@@ -333,11 +333,11 @@ title_decisions = {
 					text = da_ttip_this_is_designated_title
 					hidden_tooltip = {
 						if = {
-							limit = { NOT = { da_has_title_id = yes } }
-							da_assign_title_id = yes
+							limit = { NOT = { da_has_transfer_recipient_title_id = yes } }
+							da_assign_transfer_recipient_title_id = yes
 						}
 						FROM = {
-							set_variable = { which = da_title_id which = ROOT }
+							set_variable = { which = da_transfer_recipient_title_id which = ROOT }
 							set_character_flag = da_has_title_recipient_id
 						}
 					}
@@ -441,8 +441,8 @@ title_decisions = {
 				
 				any_title_under = {
 					limit = {
-						da_has_title_id = yes
-						is_variable_equal = { which = da_title_id which = FROM }
+						da_has_transfer_recipient_title_id = yes
+						is_variable_equal = { which = da_transfer_recipient_title_id which = FROM }
 					}
 					custom_tooltip = {
 						text = da_ttip_transfer
@@ -553,8 +553,8 @@ title_decisions = {
 				
 				any_title_under = {
 					limit = {
-						da_has_title_id = yes
-						is_variable_equal = { which = da_title_id which = FROM }
+						da_has_transfer_recipient_title_id = yes
+						is_variable_equal = { which = da_transfer_recipient_title_id which = FROM }
 					}
 					custom_tooltip = {
 						text = da_ttip_transfer
@@ -641,8 +641,8 @@ title_decisions = {
 			FROM = {
 				any_title_under = {
 					limit = {
-						da_has_title_id = yes
-						is_variable_equal = { which = da_title_id which = FROM }
+						da_has_transfer_recipient_title_id = yes
+						is_variable_equal = { which = da_transfer_recipient_title_id which = FROM }
 					}
 					custom_tooltip = {
 						text = da_ttip_transfer
