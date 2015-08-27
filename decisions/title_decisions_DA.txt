@@ -737,7 +737,7 @@ title_decisions = {
 				custom_tooltip = {
 					text = da_ttip_previously_created_from
 					hidden_tooltip = {
-						NOT = {has_title_flag = customtitle_created}
+						NOT = { da_has_county_custom_duchy_title_id = yes }
 					}
 				}
 			}
@@ -760,9 +760,10 @@ title_decisions = {
 					}
 					hidden_tooltip = {
 						new_title = {
-							set_variable = {
-								which = "customtitle_findme"
-								value = 1
+							da_assign_county_custom_duchy_title_id = yes
+							ROOT = {
+								set_variable = { which = da_county_custom_duchy_title_id which = PREV }
+								set_title_flag = has_da_county_custom_duchy_title_id
 							}
 						}
 						FROM = {
@@ -773,7 +774,8 @@ title_decisions = {
 											any_demesne_title = {
 												limit = {
 													real_tier = DUKE
-													check_variable = {which = "customtitle_findme" value = 1} 
+													da_has_county_custom_duchy_title_id = yes
+													is_variable_equal = { which = da_county_custom_duchy_title_id which = ROOT }
 												}
 												de_jure_liege = PREVPREV
 												
@@ -794,21 +796,13 @@ title_decisions = {
 																	duchy = {
 																		OR = {
 																			has_holder = no
-																			holder_scope = {
-																				OR = { 
-																					character = FROM
-																					any_liege = {
-																						character = FROM
-																					}
-																				}
-																			}
+																			da_title_controlled = yes
 																		}
 																	}
 																}
 															}
 														}
-														ROOT = 
-														{
+														ROOT = {
 															 de_jure_liege = PREV
 														}
 													}
@@ -855,17 +849,12 @@ title_decisions = {
 														}
 													}
 												}
-												set_variable = {
-													which = "customtitle_findme"
-													value = 0
-												}
 											}
 										}
 									}
 								}
 							}
 						}
-						set_title_flag = customtitle_created
 					}
 				}
 				#Costs
@@ -997,7 +986,7 @@ title_decisions = {
 				custom_tooltip = {
 					text = da_ttip_previously_created_from
 					hidden_tooltip = {
-						NOT = { has_title_flag = customtitle_created}
+						NOT = { da_has_duchy_custom_kingdom_title_id = yes }
 					}
 				}
 			}
@@ -1019,9 +1008,10 @@ title_decisions = {
 					}
 					hidden_tooltip = {
 						new_title = {	
-							set_variable = {
-								which = "customtitle_findme"
-								value = 1
+							da_assign_duchy_custom_kingdom_title_id = yes
+							ROOT = {
+								set_variable = { which = da_duchy_custom_kingdom_title_id which = PREV }
+								set_title_flag = has_da_duchy_custom_kingdom_title_id
 							}
 						}
 						FROM = {
@@ -1032,7 +1022,8 @@ title_decisions = {
 											any_demesne_title = {
 												limit = {
 													real_tier = KING
-													check_variable = {which = "customtitle_findme" value = 1} 
+													da_has_duchy_custom_kingdom_title_id = yes
+													is_variable_equal = { which = da_duchy_custom_kingdom_title_id which = ROOT }
 												}
 												de_jure_liege = PREVPREV
 												if = {
@@ -1107,17 +1098,12 @@ title_decisions = {
 														}
 													}
 												}
-												set_variable = {
-													which = "customtitle_findme"
-													value = 0
-												}
 											}
 										}
 									}
 								}
 							}
 						}
-						set_title_flag = customtitle_created
 					}
 				}
 				#Costs
@@ -1286,7 +1272,7 @@ title_decisions = {
 				custom_tooltip = {
 					text = da_ttip_previously_created_from
 					hidden_tooltip = {
-						NOT = { has_title_flag = customtitle_created}
+						NOT = { da_has_kingdom_custom_empire_title_id = yes }
 					}
 				}
 			}
@@ -1308,9 +1294,10 @@ title_decisions = {
 					}
 					hidden_tooltip = {
 						new_title = {	
-							set_variable = {
-								which = "customtitle_findme"
-								value = 1
+							da_assign_county_custom_duchy_title_id = yes
+							ROOT = {
+								set_variable = { which = da_kingdom_custom_empire_title_id which = PREV }
+								set_title_flag = has_da_kingdom_custom_empire_title_id
 							}
 						}
 						FROM = {
@@ -1319,7 +1306,8 @@ title_decisions = {
 									any_demesne_title = {
 										limit = {
 											real_tier = EMPEROR
-											check_variable = {which = "customtitle_findme" value = 1} 
+											da_has_kingdom_custom_empire_title_id = yes
+											is_variable_equal = { which = da_kingdom_custom_empire_title_id which = ROOT }
 										}
 										if = {
 											limit = {
@@ -1393,15 +1381,10 @@ title_decisions = {
 												}
 											}
 										}
-										set_variable = {
-											which = "customtitle_findme"
-											value = 0
-										}
 									}
 								}
 							}
 						}
-						set_title_flag = customtitle_created
 					}
 				}
 				#Costs
@@ -1570,7 +1553,7 @@ title_decisions = {
 				custom_tooltip = {
 					text = da_ttip_previously_created_from
 					hidden_tooltip = {
-						NOT = {has_title_flag = customtitle_created}
+						NOT = { da_has_county_custom_duchy_title_id = yes }
 					}
 				}
 			}
@@ -1593,9 +1576,10 @@ title_decisions = {
 					}
 					hidden_tooltip = {
 						new_title = {	
-							set_variable = {
-								which = "customtitle_findme"
-								value = 1
+							da_assign_county_custom_duchy_title_id = yes
+							ROOT = {
+								set_variable = { which = da_county_custom_duchy_title_id which = PREV }
+								set_title_flag = has_da_county_custom_duchy_title_id
 							}
 						}
 						FROM = {
@@ -1606,7 +1590,8 @@ title_decisions = {
 											any_demesne_title = {
 												limit = {
 													real_tier = DUKE
-													check_variable = {which = "customtitle_findme" value = 1} 
+													da_has_county_custom_duchy_title_id = yes
+													is_variable_equal = { which = da_county_custom_duchy_title_id which = ROOT }
 												}
 												de_jure_liege = PREVPREV
 												
@@ -1621,17 +1606,12 @@ title_decisions = {
 													}
 													copy_title_laws = PREVPREVPREVPREV
 												}
-												set_variable = {
-													which = "customtitle_findme"
-													value = 0
-												}
 											}
 										}
 									}
 								}
 							}
 						}
-						set_title_flag = customtitle_created
 					}
 				}
 				#Costs
@@ -1726,7 +1706,7 @@ title_decisions = {
 				custom_tooltip = {
 					text = da_ttip_previously_created_from
 					hidden_tooltip = {
-						NOT = { has_title_flag = customtitle_created}
+						NOT = { da_has_duchy_custom_kingdom_title_id = yes }
 					}
 				}
 			}
@@ -1748,9 +1728,10 @@ title_decisions = {
 					}
 					hidden_tooltip = {
 						new_title = {	
-							set_variable = {
-								which = "customtitle_findme"
-								value = 1
+							da_assign_duchy_custom_kingdom_title_id = yes
+							ROOT = {
+								set_variable = { which = da_duchy_custom_kingdom_title_id which = PREV }
+								set_title_flag = has_da_duchy_custom_kingdom_title_id
 							}
 						}
 						FROM = {
@@ -1761,7 +1742,8 @@ title_decisions = {
 											any_demesne_title = {
 												limit = {
 													real_tier = KING
-													check_variable = {which = "customtitle_findme" value = 1} 
+													da_has_duchy_custom_kingdom_title_id = yes
+													is_variable_equal = { which = da_duchy_custom_kingdom_title_id which = ROOT }
 												}
 												de_jure_liege = PREVPREV
 												if = {
@@ -1775,17 +1757,12 @@ title_decisions = {
 													}
 													copy_title_laws = PREVPREVPREVPREV
 												}
-												set_variable = {
-													which = "customtitle_findme"
-													value = 0
-												}
 											}
 										}
 									}
 								}
 							}
 						}
-						set_title_flag = customtitle_created
 					}
 				}
 				#Costs
@@ -1955,7 +1932,7 @@ title_decisions = {
 				custom_tooltip = {
 					text = da_ttip_previously_created_from
 					hidden_tooltip = {
-						NOT = { has_title_flag = customtitle_created}
+						NOT = { da_has_kingdom_custom_empire_title_id = yes }
 					}
 				}
 			}
@@ -1977,9 +1954,10 @@ title_decisions = {
 					}
 					hidden_tooltip = {
 						new_title = {	
-							set_variable = {
-								which = "customtitle_findme"
-								value = 1
+							da_assign_county_custom_duchy_title_id = yes
+							ROOT = {
+								set_variable = { which = da_kingdom_custom_empire_title_id which = PREV }
+								set_title_flag = has_da_kingdom_custom_empire_title_id
 							}
 						}
 						FROM = {
@@ -1988,7 +1966,8 @@ title_decisions = {
 									any_demesne_title = {
 										limit = {
 											real_tier = EMPEROR
-											check_variable = {which = "customtitle_findme" value = 1} 
+											da_has_kingdom_custom_empire_title_id = yes
+											is_variable_equal = { which = da_kingdom_custom_empire_title_id which = ROOT }
 										}
 										if = {
 											limit = {
@@ -2001,15 +1980,10 @@ title_decisions = {
 											}
 											copy_title_laws = PREVPREV
 										}
-										set_variable = {
-											which = "customtitle_findme"
-											value = 0
-										}
 									}
 								}
 							}
 						}
-						set_title_flag = customtitle_created
 					}
 				}
 				#Costs

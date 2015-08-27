@@ -1,5 +1,16 @@
 
-
 da_has_transfer_recipient_title_id = {
 	has_title_flag = has_da_transfer_recipient_title_id
+}
+
+da_has_county_custom_duchy_title_id = {
+	has_title_flag = has_da_county_custom_duchy_title_id
+}
+
+da_has_duchy_custom_kingdom_title_id = {
+	has_title_flag = has_da_duchy_custom_kingdom_title_id
+}
+
+da_has_kingdom_custom_empire_title_id = {
+	has_title_flag = has_da_kingdom_custom_empire_title_id
 }

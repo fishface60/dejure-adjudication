@@ -28,10 +28,14 @@ import os
 
 
 PREFIX = "da_"
-VARIABLES = {"transfer_recipient_title_id": ('title', 'any_title')}
+VARIABLES = [
+	("transfer_recipient_title_id", ('title', 'any_title')),
+	("county_custom_duchy_title_id", ('title', 'any_title')),
+	("duchy_custom_kingdom_title_id", ('title', 'any_title')),
+	("kingdom_custom_empire_title_id", ('title', 'any_title')),
+]
 
 ASSIGN_ID_TEMPLATE = r'''
-
 %(prefix)sassign_%(variable)s = {
 	%(search_scope)s = {
 		if = {
@@ -54,7 +58,6 @@ ASSIGN_ID_TEMPLATE = r'''
 }
 '''
 ID_SET_TEMPLATE = r'''
-
 %(prefix)shas_%(variable)s = {
 	has_%(type)s_flag = has_%(prefix)s%(variable)s
 }
@@ -66,7 +69,7 @@ for template, path in [(ASSIGN_ID_TEMPLATE, ('common', 'scripted_effects', PREFI
 	if not os.path.exists(os.path.dirname(path)):
 		os.makedirs(os.path.dirname(path))
 	f = open(path, 'w')
-	for variable, (type, search_scope) in VARIABLES.items():
+	for variable, (type, search_scope) in VARIABLES:
 		f.write(template % {'prefix': PREFIX,
 		                    'variable': variable,
 		                    'type': type,

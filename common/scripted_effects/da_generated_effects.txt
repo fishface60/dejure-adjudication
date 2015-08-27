@@ -1,5 +1,4 @@
 
-
 da_assign_transfer_recipient_title_id = {
 	any_title = {
 		if = {
@@ -19,4 +18,67 @@ da_assign_transfer_recipient_title_id = {
 	}
 	change_variable = { which = da_transfer_recipient_title_id value = 1 }
 	set_title_flag = has_da_transfer_recipient_title_id
+}
+
+da_assign_county_custom_duchy_title_id = {
+	any_title = {
+		if = {
+			limit = {
+				AND = {
+					# Title flag check necessary as unset value may be garbage
+					has_title_flag = has_da_county_custom_duchy_title_id
+					# check if this ID > previous
+					# (actually checks >=, but we assume it can't be equal
+					check_variable = { which = da_county_custom_duchy_title_id which = PREVPREV }
+				}
+			}
+			PREVPREV = {
+				set_variable = { which = da_county_custom_duchy_title_id which = PREV }
+			}
+		}
+	}
+	change_variable = { which = da_county_custom_duchy_title_id value = 1 }
+	set_title_flag = has_da_county_custom_duchy_title_id
+}
+
+da_assign_duchy_custom_kingdom_title_id = {
+	any_title = {
+		if = {
+			limit = {
+				AND = {
+					# Title flag check necessary as unset value may be garbage
+					has_title_flag = has_da_duchy_custom_kingdom_title_id
+					# check if this ID > previous
+					# (actually checks >=, but we assume it can't be equal
+					check_variable = { which = da_duchy_custom_kingdom_title_id which = PREVPREV }
+				}
+			}
+			PREVPREV = {
+				set_variable = { which = da_duchy_custom_kingdom_title_id which = PREV }
+			}
+		}
+	}
+	change_variable = { which = da_duchy_custom_kingdom_title_id value = 1 }
+	set_title_flag = has_da_duchy_custom_kingdom_title_id
+}
+
+da_assign_kingdom_custom_empire_title_id = {
+	any_title = {
+		if = {
+			limit = {
+				AND = {
+					# Title flag check necessary as unset value may be garbage
+					has_title_flag = has_da_kingdom_custom_empire_title_id
+					# check if this ID > previous
+					# (actually checks >=, but we assume it can't be equal
+					check_variable = { which = da_kingdom_custom_empire_title_id which = PREVPREV }
+				}
+			}
+			PREVPREV = {
+				set_variable = { which = da_kingdom_custom_empire_title_id which = PREV }
+			}
+		}
+	}
+	change_variable = { which = da_kingdom_custom_empire_title_id value = 1 }
+	set_title_flag = has_da_kingdom_custom_empire_title_id
 }
