@@ -35,6 +35,4 @@ da_create_titular_kingdom;Create a new titular kingdom;;;;;;;;;;;;;x;
 da_create_titular_kingdom_desc;Create a new titular kingdom from the duchy of [Root.GetBaseName]. It will take the name of [Root.GetBaseName].;;;;;;;;;;;;;x;
 da_create_titular_empire;Create a new titular empire;;;;;;;;;;;;;x;
 da_create_titular_empire_desc;Create a new titular empire from the kingdom of [Root.GetBaseName]. It will take the name of [Root.GetBaseName].;;;;;;;;;;;;;x;
-da_has_title_id_tooltip;[This.GetFullBaseName] has had a title ID assigned\n;;;;;;;;;;;;;x;
-da_assign_title_id_tooltip;Assign a new title ID to [This.GetFullBaseName]\n;;;;;;;;;;;;;x;
 #;;;;;;;;;;;;;;x;
