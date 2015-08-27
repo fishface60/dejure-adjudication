@@ -4,18 +4,18 @@
 ##
 ##	Modified:	7/27/2015	v0.1		Occult Orison
 ##	  =Created
-##		-Able to create Duchy/Kingdom/Empire from any title one 
+##		-Able to create Duchy/Kingdom/Empire from any title one
 ##			rank lower
-##		-If this increases rank, all realm titles one rank 
+##		-If this increases rank, all realm titles one rank
 ##			below will auto-magically de-jure drift into the new
-##			title, unless the title they de-jure belong to already 
+##			title, unless the title they de-jure belong to already
 ##			exists.
 ##		-The new title will try to copy the most appropriate laws
 ##		-Only top-liege can create new titles of equal or lesser rank
 ##			than his own.
-##		-In such cases, only the base title will auto-magically 
+##		-In such cases, only the base title will auto-magically
 ##			de-jure drift into the new title
-##		-It requires piety, prestige, cash, an able mind, and good 
+##		-It requires piety, prestige, cash, an able mind, and good
 ##			standing with your religion head, and grants prestige
 ##		-It can not be repeated on the same base title
 ##		-Currently AI can only use this on their primary title
@@ -27,7 +27,7 @@
 ##		=Update
 ##			-Able to Re-Assign (Adjudicate) the de-jure liege of
 ##				county, duchy, and kingdom titles in realm
-##			-Costs Prestige, Piety, Cash, and may upset holders of 
+##			-Costs Prestige, Piety, Cash, and may upset holders of
 ##				titles which lose de-jure vassal titles
 ##			-Addressed issue where you could create new titles from
 ##				lower titles not owned by you, despite the filter
@@ -35,24 +35,24 @@
 ##
 ##	Modified: 8/1/2015		v0.2.1		Occult Orison
 ##		=Minor Update
-##			-Moved defines into own file for compatibility 
+##			-Moved defines into own file for compatibility
 ##
 ##	Modified: 8/1/2015		v0.3		Occult Orison
 ##		=Update
-##			-Addressed issue where a title could be transferred to 
+##			-Addressed issue where a title could be transferred to
 ##				its current de jure liege title
-##			-Addressed issue where vassal could change the designate 
+##			-Addressed issue where vassal could change the designate
 ##			-Added English localisation text for everything
 ##			-Fixed bug where transferring kingdoms into new empires
 ##				were attempting to transfer into the designated kingdom
 ##
 ##	Modified: 8/2/2015		v0.4		Occult Orison
 ##		=Update
-##			-Realized the sub_realm_owned filter does not work at all, and 
+##			-Realized the sub_realm_owned filter does not work at all, and
 ##				added requirements to all decisions to fix this, which
 ##				means now you can't designate recipient titles outside
 ##				your realm
-##			-Fixed it so that you can not de jure drift titles out 
+##			-Fixed it so that you can not de jure drift titles out
 ##				of their original titles if any liege above that title
 ##				exists, not just the immediate liege. The exception
 ##				being if you move it to a title that shares the de jure
@@ -64,19 +64,19 @@
 ##				applies to your rightful religious head. Which means
 ##				your anti-pope or patriarch if you have one instead.
 ##			-Added the ability to create titular titles instead of de jure.
-##				It acts the same and has the same requirements, only 
+##				It acts the same and has the same requirements, only
 ##				nothing de jure drifts into the new title. The title will
 ##				still be a de jure vassal to the correct liege
 ##				Ex: titular duchy from a county won't have that county
 ##				as a de jure vassal but will be a de jure vassal of the
 ##				kingdom that county belongs to.
-##	
+##
 ##	Modified: 8/6/2015		v0.4.1		Occult Orison
 ##		=Minor Update
 ##			-Created non-functional duplicates of Form Kingdom/Empire decisons
 ##				to intentionally break them so that I can disable them
 ##				without overriding realm_decisions.txt
-##	
+##
 ##	Modified: 8/6/2015		v0.4.2		Occult Orison
 ##		=Minor Update
 ##			-Re-reenabled the Form Kingdom/Empire decisons because disabling
@@ -172,12 +172,12 @@
 ##
 ##
 ##	Readme:
-##			Decisions to replace and augment the "Form New 
-##		Kingdom/Empire" decisions from CM Dlc to use targeted 
-##		decisions on titles. 
-##			You have my permission to reuse my work as long as I am 
+##			Decisions to replace and augment the "Form New
+##		Kingdom/Empire" decisions from CM Dlc to use targeted
+##		decisions on titles.
+##			You have my permission to reuse my work as long as I am
 ##		credited, but idk how I would stop you anyways.
-##			If you find any bugs or I have done something 
+##			If you find any bugs or I have done something
 ##		embarrassing, please inform me, thanks!
 ##--################################################################
 # Title decisions are possible vs _all_ titles and are shown in the Title Diplomacy View, not the Intrigue View. The taker is in the FROM scope.
@@ -190,7 +190,7 @@
 #	realm_owned: all titles in the same top realm as the AI
 #	dynasty_owned: all titles owned by members of the same dynasty
 #	all: all titles (Avoid if possible. VERY CPU-HEAVY!)
-#	
+#
 
 ##--################################################################
 ##	Template
@@ -200,16 +200,16 @@
 		# #Filter Block - Ai Filter Block
 		# filter = sub_realm_owned
 		# ai_target_filter = sub_realm_owned
-		
+
 		# #From potential Block - "The Decider"
 		# from_potential = {
 			# #is_nomadic = yes
 			# #has_dlc = "Horse Lords"
 		# }
-		
+
 		# #Potential Block - Title in Question
 		# potential = {
-			# #tier = COUNT #Title Tier 
+			# #tier = COUNT #Title Tier
 			# #location = { #location refers to title
 			# #	owner = {
 			# #		same_realm = FROM
@@ -221,7 +221,7 @@
 			# #	}
 			# #}
 		# }
-		
+
 		# #Allow Block
 		# allow = {
 			# #NOT = { num_of_settlements = 1 }
@@ -233,7 +233,7 @@
 			# #	NOT = { has_province_modifier = nomads_exploited_land }
 			# #}
 		# }
-		
+
 		# #Effect Block
 		# effect = {
 			# #holder_scope = {
@@ -273,14 +273,14 @@ title_decisions = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
 		ai_target_filter = primary_title
-		
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			ai = no
 			#is_nomadic = yes
 			#has_dlc = "Horse Lords"
 		}
-		
+
 		#Potential Block - Title in Question
 		potential = {
 			OR = {
@@ -297,7 +297,7 @@ title_decisions = {
 
 			da_title_controlled = yes
 		}
-		
+
 		#Allow Block
 		allow = {
 			custom_tooltip = {
@@ -321,7 +321,7 @@ title_decisions = {
 				NOT = { trait = incapable }
 			}
 		}
-		
+
 		#Effect Block
 		effect = {
 			ROOT = {
@@ -352,13 +352,13 @@ title_decisions = {
 ## 	/Designate Title As Recipient
 
 ##--################################################################
-##	Transfer County to Recipient Duchy 
+##	Transfer County to Recipient Duchy
 ##--################################################################
 	da_transfer_county_to_recipient_duchy = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
 		ai_target_filter = primary_title
-		
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			ai = no
@@ -366,13 +366,13 @@ title_decisions = {
 			has_dlc = "Charlemagne"
 			is_playable = yes
 		}
-		
+
 		#Potential Block - Title in Question
 		potential = {
 			real_tier = COUNT
 			da_title_potential_transfer = yes
 		}
-		
+
 		#Allow Block
 		allow = {
 			FROM = {
@@ -434,7 +434,7 @@ title_decisions = {
 						}
 					}
 				}
-				
+
 				any_title_under = {
 					limit = {
 						da_has_transfer_recipient_title_id = yes
@@ -466,13 +466,13 @@ title_decisions = {
 ## 	/Transfer County to Recipient Duchy
 
 ##--################################################################
-##	Transfer Duchy to Recipient Kingdom 
+##	Transfer Duchy to Recipient Kingdom
 ##--################################################################
 	da_transfer_duchy_to_recipient_kingdom = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
 		ai_target_filter = primary_title
-		
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			ai = no
@@ -480,13 +480,13 @@ title_decisions = {
 			has_dlc = "Charlemagne"
 			is_playable = yes
 		}
-		
+
 		#Potential Block - Title in Question
 		potential = {
 			real_tier = DUKE
 			da_title_potential_transfer = yes
 		}
-		
+
 		#Allow Block
 		allow = {
 			FROM = {
@@ -548,7 +548,7 @@ title_decisions = {
 						}
 					}
 				}
-				
+
 				any_title_under = {
 					limit = {
 						da_has_transfer_recipient_title_id = yes
@@ -580,13 +580,13 @@ title_decisions = {
 ## 	/Transfer Duchy to Recipient Kingdom
 
 ##--################################################################
-##	Transfer Kingdom to Recipient Empire 
+##	Transfer Kingdom to Recipient Empire
 ##--################################################################
 	da_transfer_kingdom_to_recipient_empire = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
 		ai_target_filter = primary_title
-		
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			ai = no
@@ -594,13 +594,13 @@ title_decisions = {
 			has_dlc = "Charlemagne"
 			is_playable = yes
 		}
-		
+
 		#Potential Block - Title in Question
 		potential = {
 			real_tier = KING
 			da_title_potential_transfer = yes
 		}
-		
+
 		#Allow Block
 		allow = {
 			FROM = {
@@ -673,8 +673,8 @@ title_decisions = {
 	da_create_duchy = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
-		ai_target_filter = primary_title 
-		
+		ai_target_filter = primary_title
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			higher_real_tier_than = BARON
@@ -687,7 +687,7 @@ title_decisions = {
 			real_tier = COUNT
 			da_title_controlled = yes
 		}
-		
+
 		#Allow Block
 		allow = {
 			FROM = {
@@ -819,14 +819,14 @@ title_decisions = {
 													is_variable_equal = { which = da_county_custom_duchy_title_id which = ROOT }
 												}
 												de_jure_liege = PREVPREV
-												
+
 												if = {
 													limit = {
 														FROM = {
 															any_demesne_title = {
 																count = 2
 																higher_real_tier_than = COUNT
-															}	
+															}
 														}
 													}
 													copy_title_laws = PREVPREVPREVPREV
@@ -856,7 +856,7 @@ title_decisions = {
 																	count = 2
 																	higher_real_tier_than = COUNT
 																}
-															}	
+															}
 														}
 													}
 													holder_scope = {
@@ -867,7 +867,7 @@ title_decisions = {
 																	duchy = {
 																		has_holder = no
 																	}
-																}	
+																}
 															}
 															de_jure_liege = PREVPREV
 														}
@@ -926,15 +926,15 @@ title_decisions = {
 			modifier = {
 				factor = 0.1
 				FROM = {trait = humble}
-			}		
+			}
 			modifier = {
 				factor = 2
 				FROM = {trait = ambitious}
-			}		
+			}
 			modifier = {
 				factor = 1.5
 				FROM = {trait = proud}
-			}		
+			}
 			modifier = {
 				factor = 0.1
 				NOT = {
@@ -965,8 +965,8 @@ title_decisions = {
 	da_create_kingdom = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
-		ai_target_filter = primary_title 
-		
+		ai_target_filter = primary_title
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			higher_real_tier_than = COUNT
@@ -979,7 +979,7 @@ title_decisions = {
 			real_tier = DUKE
 			da_title_controlled = yes
 		}
-		
+
 		#Allow Block
 		allow = {
 			FROM = {
@@ -1012,7 +1012,7 @@ title_decisions = {
 							}
 						}
 					}
-				}		
+				}
 				custom_tooltip = {
 					text = da_ttip_king_realm_size
 					hidden_tooltip = {
@@ -1116,7 +1116,7 @@ title_decisions = {
 															any_demesne_title = {
 																count = 2
 																higher_real_tier_than = DUKE
-															}	
+															}
 														}
 													}
 													copy_title_laws = PREVPREVPREVPREV
@@ -1146,7 +1146,7 @@ title_decisions = {
 																	count = 2
 																	higher_real_tier_than = DUKE
 																}
-															}	
+															}
 														}
 													}
 													holder_scope = {
@@ -1256,15 +1256,15 @@ title_decisions = {
 			modifier = {
 				factor = 0.1
 				FROM = {trait = humble}
-			}		
+			}
 			modifier = {
 				factor = 2
 				FROM = {trait = ambitious}
-			}		
+			}
 			modifier = {
 				factor = 1.5
 				FROM = {trait = proud}
-			}		
+			}
 			modifier = {
 				factor = 0.1
 				NOT = {
@@ -1294,8 +1294,8 @@ title_decisions = {
 	da_create_empire = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
-		ai_target_filter = primary_title 
-		
+		ai_target_filter = primary_title
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			higher_real_tier_than = DUKE
@@ -1336,7 +1336,7 @@ title_decisions = {
 							}
 						}
 					}
-				}		
+				}
 				custom_tooltip = {
 					text = da_ttip_emperor_realm_size
 					hidden_tooltip = {
@@ -1379,7 +1379,7 @@ title_decisions = {
 						copy_title_laws = yes
 					}
 					hidden_tooltip = {
-						new_title = {	
+						new_title = {
 							da_assign_county_custom_duchy_title_id = yes
 							ROOT = {
 								set_variable = { which = da_kingdom_custom_empire_title_id which = PREV }
@@ -1401,7 +1401,7 @@ title_decisions = {
 													any_demesne_title = {
 														count = 2
 														higher_real_tier_than = KING #WHY!?!?!?!?!?!
-													}	
+													}
 												}
 											}
 											copy_title_laws = PREVPREV
@@ -1431,7 +1431,7 @@ title_decisions = {
 															count = 2
 															higher_real_tier_than = KING
 														}
-													}	
+													}
 												}
 											}
 											holder_scope = {
@@ -1539,15 +1539,15 @@ title_decisions = {
 			modifier = {
 				factor = 0.1
 				FROM = {trait = humble}
-			}		
+			}
 			modifier = {
 				factor = 2
 				FROM = {trait = ambitious}
-			}		
+			}
 			modifier = {
 				factor = 1.5
 				FROM = {trait = proud}
-			}		
+			}
 			modifier = {
 				factor = 0.1
 				NOT = {
@@ -1576,8 +1576,8 @@ title_decisions = {
 	da_create_titular_duchy = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
-		ai_target_filter = primary_title 
-		
+		ai_target_filter = primary_title
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			higher_real_tier_than = BARON
@@ -1591,7 +1591,7 @@ title_decisions = {
 			real_tier = COUNT
 			da_title_controlled = yes
 		}
-		
+
 		#Allow Block
 		allow = {
 			FROM = {
@@ -1624,7 +1624,7 @@ title_decisions = {
 							}
 						}
 					}
-				}		
+				}
 				custom_tooltip = {
 					text = da_ttip_duke_realm_size
 					hidden_tooltip = {
@@ -1723,14 +1723,14 @@ title_decisions = {
 													is_variable_equal = { which = da_county_custom_duchy_title_id which = ROOT }
 												}
 												de_jure_liege = PREVPREV
-												
+
 												if = {
 													limit = {
 														FROM = {
 															any_demesne_title = {
 																count = 2
 																higher_real_tier_than = COUNT
-															}	
+															}
 														}
 													}
 													copy_title_laws = PREVPREVPREVPREV
@@ -1772,8 +1772,8 @@ title_decisions = {
 	da_create_titular_kingdom = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
-		ai_target_filter = primary_title 
-		
+		ai_target_filter = primary_title
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			higher_real_tier_than = COUNT
@@ -1787,7 +1787,7 @@ title_decisions = {
 			real_tier = DUKE
 			da_title_controlled = yes
 		}
-		
+
 		#Allow Block
 		allow = {
 			FROM = {
@@ -1820,7 +1820,7 @@ title_decisions = {
 							}
 						}
 					}
-				}		
+				}
 				custom_tooltip = {
 					text = da_ttip_king_realm_size
 					hidden_tooltip = {
@@ -1924,7 +1924,7 @@ title_decisions = {
 															any_demesne_title = {
 																count = 2
 																higher_real_tier_than = DUKE
-															}	
+															}
 														}
 													}
 													copy_title_laws = PREVPREVPREVPREV
@@ -2003,15 +2003,15 @@ title_decisions = {
 			modifier = {
 				factor = 0.1
 				FROM = {trait = humble}
-			}		
+			}
 			modifier = {
 				factor = 2
 				FROM = {trait = ambitious}
-			}		
+			}
 			modifier = {
 				factor = 1.5
 				FROM = {trait = proud}
-			}		
+			}
 			modifier = {
 				factor = 0.1
 				NOT = {
@@ -2041,8 +2041,8 @@ title_decisions = {
 	da_create_titular_empire = {
 		#Filter Block - Ai Filter Block
 		filter = realm_owned
-		ai_target_filter = primary_title 
-		
+		ai_target_filter = primary_title
+
 		#From potential Block - "The Decider"
 		from_potential = {
 			higher_real_tier_than = DUKE
@@ -2084,7 +2084,7 @@ title_decisions = {
 							}
 						}
 					}
-				}		
+				}
 				custom_tooltip = {
 					text = da_ttip_emperor_realm_size
 					hidden_tooltip = {
@@ -2149,7 +2149,7 @@ title_decisions = {
 													any_demesne_title = {
 														count = 2
 														higher_real_tier_than = KING #WHY!?!?!?!?!?!
-													}	
+													}
 												}
 											}
 											copy_title_laws = PREVPREV
@@ -2226,15 +2226,15 @@ title_decisions = {
 			modifier = {
 				factor = 0.1
 				FROM = {trait = humble}
-			}		
+			}
 			modifier = {
 				factor = 2
 				FROM = {trait = ambitious}
-			}		
+			}
 			modifier = {
 				factor = 1.5
 				FROM = {trait = proud}
-			}		
+			}
 			modifier = {
 				factor = 0.1
 				NOT = {
