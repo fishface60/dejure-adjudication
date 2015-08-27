@@ -506,9 +506,11 @@ title_decisions = {
 						}
 					}
 				}
+
 				is_adult = yes
 				prisoner = no
 				NOT = { trait = incapable }
+
 				prestige = 200
 				piety = 200
 				wealth = 100

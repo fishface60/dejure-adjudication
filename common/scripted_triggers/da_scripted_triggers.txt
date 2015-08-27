@@ -8,13 +8,16 @@
 # Check whether FROM controls the title.
 # Call as <TITLE> = { da_title_controlled = yes }
 da_title_controlled = {
-	#<TITLE>, <CHARACTER:holder>
-	holder_scope = {
-		OR = {
-			character = FROM
-			#<TITLE>, <CHARACTER:holder>, <CHARACTER:liege>
-			any_liege = {
+	OR = {
+		has_holder = no
+		#<TITLE>, <CHARACTER:holder>
+		holder_scope = {
+			OR = {
 				character = FROM
+				#<TITLE>, <CHARACTER:holder>, <CHARACTER:liege>
+				any_liege = {
+					character = FROM
+				}
 			}
 		}
 	}
