@@ -126,13 +126,7 @@
 ##				to compare, and the name of the variable in
 ##				that scope.
 ##
-##				TODO: Fix commented out code.
-##				TODO: Fix trailing whitespace.
-##				TODO: Factor out duplicated logic.
-##
 ##			-Allowed the assignment of titles when a vassal.
-##
-##				TODO: Creation of custom titles when a vassal is not yet allowed.
 ##
 ##			-Allow the assignment to titles that are not yet created.
 ##
@@ -173,6 +167,8 @@
 ##				unheld or is held by you or a vassal, that you
 ##				check whether there isn't a liege title held by
 ##				someone out of your control.
+##
+##			-Allowed the creation of titles when a vassal.
 ##
 ##
 ##	Readme:
@@ -699,6 +695,13 @@ title_decisions = {
 				prisoner = no
 				NOT = { trait = incapable }
 
+				OR = {
+					independent = yes
+					liege = {
+						higher_real_tier_than = DUKE
+					}
+				}
+
 				prestige = 200
 				piety = 200
 				wealth = 200
@@ -744,23 +747,28 @@ title_decisions = {
 				}
 			}
 		}
-		
+
 		#Effect Block
 		effect = {
 			FROM = {
 				#New Title
 				ROOT = {
-					create_title = {
-						tier = DUKE
-						landless = no
-						temporary = no
-						custom_created = yes
-						culture = FROM
-						holder = FROM
-						base_title = THIS
-						copy_title_laws = yes
-					}
-					hidden_tooltip = {
+					if = {
+						limit = {
+							FROM = {
+								independent = yes
+							}
+						}
+						create_title = {
+							tier = DUKE
+							landless = no
+							temporary = no
+							custom_created = yes
+							culture = FROM
+							holder = FROM
+							base_title = THIS
+							copy_title_laws = yes
+						}
 						new_title = {
 							da_assign_county_custom_duchy_title_id = yes
 							ROOT = {
@@ -768,6 +776,37 @@ title_decisions = {
 								set_title_flag = has_da_county_custom_duchy_title_id
 							}
 						}
+					}
+					if = {
+						limit = {
+							FROM = {
+								independent = no
+							}
+						}
+						FROM = {
+							liege = {
+								create_title = {
+									tier = KING
+									landless = no
+									temporary = no
+									custom_created = yes
+									culture = FROM
+									holder = THIS
+									base_title = ROOT
+									copy_title_laws = yes
+								}
+								new_title = {
+									grant_title_no_opinion = FROM
+									da_assign_county_custom_duchy_title_id = yes
+									ROOT = {
+										set_variable = { which = da_county_custom_duchy_title_id which = PREV }
+										set_title_flag = has_da_county_custom_duchy_title_id
+									}
+								}
+							}
+						}
+					}
+					hidden_tooltip = {
 						FROM = {
 							primary_title = {
 								ROOT = {
@@ -948,6 +987,13 @@ title_decisions = {
 				prisoner = no
 				NOT = { trait = incapable }
 
+				OR = {
+					independent = yes
+					liege = {
+						higher_real_tier_than = KING
+					}
+				}
+
 				prestige = 400
 				piety = 200
 				wealth = 400
@@ -998,24 +1044,60 @@ title_decisions = {
 			FROM = {
 				#New Title
 				ROOT = {
-					create_title = {
-						tier = KING
-						landless = no
-						temporary = no
-						custom_created = yes
-						culture = FROM
-						holder = FROM
-						base_title = THIS
-						copy_title_laws = yes
-					}
-					hidden_tooltip = {
-						new_title = {	
+					if = {
+						limit = {
+							FROM = {
+								independent = yes
+							}
+						}
+						create_title = {
+							tier = KING
+							landless = no
+							temporary = no
+							custom_created = yes
+							culture = FROM
+							holder = FROM
+							base_title = THIS
+							copy_title_laws = yes
+						}
+						new_title = {
 							da_assign_duchy_custom_kingdom_title_id = yes
 							ROOT = {
 								set_variable = { which = da_duchy_custom_kingdom_title_id which = PREV }
 								set_title_flag = has_da_duchy_custom_kingdom_title_id
 							}
 						}
+					}
+					if = {
+						limit = {
+							FROM = {
+								independent = no
+							}
+						}
+						FROM = {
+							liege = {
+								create_title = {
+									tier = KING
+									landless = no
+									temporary = no
+									custom_created = yes
+									culture = FROM
+									holder = THIS
+									base_title = ROOT
+									copy_title_laws = yes
+								}
+								new_title = {
+									grant_title_no_opinion = FROM
+									da_assign_duchy_custom_kingdom_title_id = yes
+									ROOT = {
+										set_variable = { which = da_duchy_custom_kingdom_title_id which = PREV }
+										set_title_flag = has_da_duchy_custom_kingdom_title_id
+									}
+								}
+							}
+						}
+					}
+					hidden_tooltip = {
 						FROM = {
 							primary_title = {
 								ROOT = {
@@ -1233,6 +1315,8 @@ title_decisions = {
 				is_adult = yes
 				prisoner = no
 				NOT = { trait = incapable }
+
+				independent = yes
 
 				prestige = 800
 				piety = 400
@@ -1515,6 +1599,13 @@ title_decisions = {
 				prisoner = no
 				NOT = { trait = incapable }
 
+				OR = {
+					independent = yes
+					liege = {
+						higher_real_tier_than = DUKE
+					}
+				}
+
 				prestige = 200
 				piety = 200
 				wealth = 200
@@ -1560,30 +1651,66 @@ title_decisions = {
 				}
 			}
 		}
-		
+
 		#Effect Block
 		effect = {
 			FROM = {
 				#New Title
 				ROOT = {
-					create_title = {
-						tier = DUKE
-						landless = no
-						temporary = no
-						custom_created = yes
-						culture = FROM
-						holder = FROM
-						base_title = THIS
-						copy_title_laws = yes
-					}
-					hidden_tooltip = {
-						new_title = {	
+					if = {
+						limit = {
+							FROM = {
+								independent = yes
+							}
+						}
+						create_title = {
+							tier = DUKE
+							landless = no
+							temporary = no
+							custom_created = yes
+							culture = FROM
+							holder = FROM
+							base_title = THIS
+							copy_title_laws = yes
+						}
+						new_title = {
 							da_assign_county_custom_duchy_title_id = yes
 							ROOT = {
 								set_variable = { which = da_county_custom_duchy_title_id which = PREV }
 								set_title_flag = has_da_county_custom_duchy_title_id
 							}
 						}
+					}
+					if = {
+						limit = {
+							FROM = {
+								independent = no
+							}
+						}
+						FROM = {
+							liege = {
+								create_title = {
+									tier = KING
+									landless = no
+									temporary = no
+									custom_created = yes
+									culture = FROM
+									holder = THIS
+									base_title = ROOT
+									copy_title_laws = yes
+								}
+								new_title = {
+									grant_title_no_opinion = FROM
+									da_assign_county_custom_duchy_title_id = yes
+									ROOT = {
+										set_variable = { which = da_county_custom_duchy_title_id which = PREV }
+										set_title_flag = has_da_county_custom_duchy_title_id
+									}
+								}
+							}
+						}
+					}
+					hidden_tooltip = {
 						FROM = {
 							primary_title = {
 								ROOT = {
@@ -1668,6 +1795,13 @@ title_decisions = {
 				prisoner = no
 				NOT = { trait = incapable }
 
+				OR = {
+					independent = yes
+					liege = {
+						higher_real_tier_than = KING
+					}
+				}
+
 				prestige = 400
 				piety = 200
 				wealth = 400
@@ -1718,24 +1852,60 @@ title_decisions = {
 			FROM = {
 				#New Title
 				ROOT = {
-					create_title = {
-						tier = KING
-						landless = no
-						temporary = no
-						custom_created = yes
-						culture = FROM
-						holder = FROM
-						base_title = THIS
-						copy_title_laws = yes
-					}
-					hidden_tooltip = {
-						new_title = {	
+					if = {
+						limit = {
+							FROM = {
+								independent = yes
+							}
+						}
+						create_title = {
+							tier = KING
+							landless = no
+							temporary = no
+							custom_created = yes
+							culture = FROM
+							holder = FROM
+							base_title = THIS
+							copy_title_laws = yes
+						}
+						new_title = {
 							da_assign_duchy_custom_kingdom_title_id = yes
 							ROOT = {
 								set_variable = { which = da_duchy_custom_kingdom_title_id which = PREV }
 								set_title_flag = has_da_duchy_custom_kingdom_title_id
 							}
 						}
+					}
+					if = {
+						limit = {
+							FROM = {
+								independent = no
+							}
+						}
+						FROM = {
+							liege = {
+								create_title = {
+									tier = KING
+									landless = no
+									temporary = no
+									custom_created = yes
+									culture = FROM
+									holder = THIS
+									base_title = ROOT
+									copy_title_laws = yes
+								}
+								new_title = {
+									grant_title_no_opinion = FROM
+									da_assign_duchy_custom_kingdom_title_id = yes
+									ROOT = {
+										set_variable = { which = da_duchy_custom_kingdom_title_id which = PREV }
+										set_title_flag = has_da_duchy_custom_kingdom_title_id
+									}
+								}
+							}
+						}
+					}
+					hidden_tooltip = {
 						FROM = {
 							primary_title = {
 								ROOT = {
@@ -1894,6 +2064,8 @@ title_decisions = {
 				prisoner = no
 				NOT = { trait = incapable }
 
+				independent = yes
+
 				prestige = 800
 				piety = 400
 				wealth = 800
@@ -1955,7 +2127,7 @@ title_decisions = {
 						copy_title_laws = yes
 					}
 					hidden_tooltip = {
-						new_title = {	
+						new_title = {
 							da_assign_county_custom_duchy_title_id = yes
 							ROOT = {
 								set_variable = { which = da_kingdom_custom_empire_title_id which = PREV }
